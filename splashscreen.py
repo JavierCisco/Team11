@@ -8,7 +8,7 @@ root.title("Splash Screen")
 
 try:
     image = Image.open("logo.png")
-    image = image.resize((1000, 1000), Image.ANTIALIAS)
+    image = image.resize((900, 600), Image.ANTIALIAS)
     photo = ImageTk.PhotoImage(image)
 except FileNotFoundError:
     print("Error")
