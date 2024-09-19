@@ -29,5 +29,3 @@ def close_window():
 root.after(3000, close_window)
 
 root.mainloop()
-
-print('Hello World')
