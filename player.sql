@@ -9,5 +9,5 @@ CREATE TABLE players (
 INSERT INTO players (id, codename)
 VALUES (1, 'Opus');
 
-Insert into players (1, MJackson);
-
+--inserting a player manually first to see    -francisco
+Insert into players values(1, 'Michael Jackson');
