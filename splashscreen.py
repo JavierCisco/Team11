@@ -13,7 +13,7 @@ pygame.display.set_caption("Splash Screen")
 
 # load and display the splash image
 try:
-    splash_sound = pygame.mixer.Sound("theme.wav")
+    splash_sound = pygame.mixer.Sound("theme.mp3")
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except pygame.error:
@@ -31,7 +31,7 @@ class Button:
         self.text_lines = text.split('\n')
         self.rect = pygame.Rect(x, y, width, height)
         self.action = action
-        self.font = pygame.font.Font(None, 26)
+        self.font = pygame.font.Font(None, 20)
 
     def draw(self):
         pygame.draw.rect(screen, (0, 0, 0), self.rect)  #draw buttons rectangle
@@ -71,7 +71,7 @@ def clear_game():
 button_width = 90  # width 
 button_height = 50  # height
 button_margin = 10  # margin
-y_position = SCREEN_HEIGHT - button_height - 20  # Y-position
+y_position = SCREEN_HEIGHT - button_height - 60  # Y-position
 
 buttons = [
     Button("F1\nEdit Game", button_margin + 0 * (button_width + button_margin), y_position, button_width, button_height, edit_game),
@@ -126,6 +126,17 @@ while running:
     else:
         # draw buttons screen
         screen.fill((255, 255, 255))
+        ###################################################
+        BLACK = (0,0,0)
+        WHITE = (255,255,255)
+        pygame.display.set_caption("Entry Terminal")
+        font = pygame.font.Font(None, 36)
+        text = font.render("Edit Current Game",True, BLACK)
+        screen.blit(text, (280, 0))
+        pygame.draw.rect(screen, BLACK, pygame.Rect(0, 550, 800, 40))
+        text = font.render("<Del> to Delete Player, <i> to Insert Player or Edit Codename", True, WHITE)
+        screen.blit(text, (50,560))
+        ###################################################
         for button in buttons:
             button.draw()
         pygame.display.update()
