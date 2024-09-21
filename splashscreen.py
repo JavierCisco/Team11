@@ -68,16 +68,20 @@ def flick_sync():
 def clear_game():
     print("Clear Game clicked!")
 
-# create buttons
+button_width = 90  # width 
+button_height = 50  # height
+button_margin = 10  # margin
+y_position = SCREEN_HEIGHT - button_height - 20  # Y-position
+
 buttons = [
-    Button("F1\nEdit Game", (SCREEN_WIDTH - 200) // 2, 100, 200, 50, edit_game),
-    Button("F2\nGame Parameters", (SCREEN_WIDTH - 200) // 2, 170, 200, 50, game_parameters),
-    Button("F3\nStart Game", (SCREEN_WIDTH - 200) // 2, 240, 200, 50, start_game),
-    Button("F5\nPreEntered Games", (SCREEN_WIDTH - 200) // 2, 310, 200, 50, pre_entered_games),
-    Button("F7", (SCREEN_WIDTH - 200) // 2, 380, 200, 50),
-    Button("F8\nView Game", (SCREEN_WIDTH - 200) // 2, 450, 200, 50, view_game),
-    Button("F10\nFlick Sync", (SCREEN_WIDTH - 200) // 2, 520, 200, 50, flick_sync),
-    Button("F12\nClear Game", (SCREEN_WIDTH - 200) // 2, 590, 200, 50, clear_game),
+    Button("F1\nEdit Game", button_margin + 0 * (button_width + button_margin), y_position, button_width, button_height, edit_game),
+    Button("F2\nGame Parameters", button_margin + 1 * (button_width + button_margin), y_position, button_width, button_height, game_parameters),
+    Button("F3\nStart Game", button_margin + 2 * (button_width + button_margin), y_position, button_width, button_height, start_game),
+    Button("F5\nPreEntered Games", button_margin + 3 * (button_width + button_margin), y_position, button_width, button_height, pre_entered_games),
+    Button("F7", button_margin + 4 * (button_width + button_margin), y_position, button_width, button_height),
+    Button("F8\nView Game", button_margin + 5 * (button_width + button_margin), y_position, button_width, button_height, view_game),
+    Button("F10\nFlick Sync", button_margin + 6 * (button_width + button_margin), y_position, button_width, button_height, flick_sync),
+    Button("F12\nClear Game", button_margin + 7 * (button_width + button_margin), y_position, button_width, button_height, clear_game),
 ]
 
 # dictionary to map keys to actions
