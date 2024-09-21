@@ -13,7 +13,7 @@ pygame.display.set_caption("Splash Screen")
 
 # load and display the splash image
 try:
-    splash_sound = pygame.mixer.Sound("theme.mp3")
+    splash_sound = pygame.mixer.Sound("theme.wav")
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except pygame.error:
