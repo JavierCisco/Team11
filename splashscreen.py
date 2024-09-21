@@ -44,6 +44,7 @@ class Button:
     def is_clicked(self, pos):
         if self.rect.collidepoint(pos) and self.action:
             self.action()  # call action if button is clicked (fix so it's connected to keyboard)
+    
 
 # button action functions
 def edit_game():
@@ -79,6 +80,18 @@ buttons = [
     Button("F12\nClear Game", (SCREEN_WIDTH - 200) // 2, 590, 200, 50, clear_game),
 ]
 
+# dictionary to map keys to actions
+key_to_action = {
+    pygame.K_F1: edit_game,
+    pygame.K_F2: game_parameters,
+    pygame.K_F3: start_game,
+    pygame.K_F5: pre_entered_games,
+    pygame.K_F7: lambda: print("F7 clicked!"),  # no action assigned for F7 yet
+    pygame.K_F8: view_game,
+    pygame.K_F10: flick_sync,
+    pygame.K_F12: clear_game
+}
+
 # main loop
 running = True
 on_splash_screen = True
@@ -94,6 +107,12 @@ while running:
             mouse_pos = event.pos
             for button in buttons:
                 button.is_clicked(mouse_pos)
+                
+        # check for keypress events
+        elif event.type == pygame.KEYDOWN:
+            if event.key in key_to_action:
+                key_to_action[event.key]() 
+
 
     if on_splash_screen:
         # display the splash screen with image
