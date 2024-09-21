@@ -2,7 +2,7 @@ import pygame
 import sys
 
 pygame.init()
-
+pygame.mixer.init()
 # screen dimensions
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
