@@ -13,13 +13,14 @@ pygame.display.set_caption("Splash Screen")
 
 # load and display the splash image
 try:
+    splash_sound = pygame.mixer.Sound("theme.mp3")
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except pygame.error:
     print("Error: logo.png not found.")
     pygame.quit()
     sys.exit()
-
+splash_sound.play()
 # set a timer to show the main screen after 3 seconds
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
