@@ -1,5 +1,6 @@
 import pygame
 import sys
+import socket
 
 pygame.init()
 pygame.mixer.init()
@@ -127,9 +128,9 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key in key_to_action:
                 key_to_action[event.key]()
-	    elif event.key == pygame.K_i:
-		id = int(input("Enter player ID: "))
-		codename = input("Enter player codename: ")
+            elif event.key == pygame.K_i:
+                id = int(input("Enter player ID: "))
+                codename = input("Enter player codename: ")
                 equipment_code = input(f"Enter equipment code for {codename: }")
                 add_player_transmit(id, codename, equipment_code)
 
