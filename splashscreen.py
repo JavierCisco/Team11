@@ -14,7 +14,7 @@ pygame.display.set_caption("Splash Screen")
 
 # load and display the splash image
 try:
-    splash_sound = pygame.mixer.Sound("theme.wav")
+    splash_sound = pygame.mixer.Sound("theme.mp3")
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except pygame.error:
@@ -31,7 +31,7 @@ def add_player_transmit(id, codename, equipment_code):
 	print(f"Adding player: Id = {id}, Codename = {codename}")
 	client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	server_address = ('localhost', 7500)
-	message = equipment_code.encode()
+	message = f"Equipment code for {codename} is {equipment_code}"
 	client_socket.sendto(message, server_address)
 
 	print(f"Transmitted equipment code '{equipment_code}' for player {codename}")
@@ -130,7 +130,7 @@ while running:
                 key_to_action[event.key]()
             elif event.key == pygame.K_i:
                 id = int(input("Enter player ID: "))
-                codename = input("Enter player codename: ")
+                codename = input("Enter player codename: ").strip()
                 equipment_code = input(f"Enter equipment code for {codename: }")
                 add_player_transmit(id, codename, equipment_code)
 
