@@ -1,5 +1,8 @@
 import pygame
 import sys
+import socket
+import random
+import subprocess
 
 pygame.init()
 pygame.mixer.init()
@@ -13,7 +16,7 @@ pygame.display.set_caption("Splash Screen")
 
 # load and display the splash image
 try:
-    splash_sound = pygame.mixer.Sound("theme.wav")
+    splash_sound = pygame.mixer.Sound("theme.mp3")
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except pygame.error:
@@ -25,13 +28,34 @@ splash_sound.play()
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
+# Functions to start the server and client
+def start_server():
+    subprocess.Popen(['python3', 'server.py'])  # Start the UDP server
+
+def start_client():
+    subprocess.Popen(['python3', 'client.py'])  # Start the UDP client
+
+# Call these functions to start the server and client
+start_server()
+start_client()
+
+# UDP setup
+UDP_IP = "127.0.0.1"  # replace with your target IP
+UDP_PORT = 7500       # the port to broadcast equipment codes
+udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+def send_equipment_code(code):
+    message = str(code).encode('utf-8')
+    udp_socket.sendto(message, (UDP_IP, UDP_PORT))
+    print(f"Sent equipment code: {code}")
+    
 # button class
 class Button:
     def __init__(self, text, x, y, width, height, action=None):
         self.text_lines = text.split('\n')
         self.rect = pygame.Rect(x, y, width, height)
         self.action = action
-        self.font = pygame.font.Font(None, 26)
+        self.font = pygame.font.Font(None, 20)
 
     def draw(self):
         pygame.draw.rect(screen, (0, 0, 0), self.rect)  #draw buttons rectangle
@@ -68,10 +92,15 @@ def flick_sync():
 def clear_game():
     print("Clear Game clicked!")
 
+def add_player():
+    player_id = random.randint(1000, 9999)  # This would be dynamically generated or provided
+    print(f"Player {player_id} added!")
+    send_equipment_code(player_id)
+
 button_width = 90  # width 
 button_height = 50  # height
 button_margin = 10  # margin
-y_position = SCREEN_HEIGHT - button_height - 20  # Y-position
+y_position = SCREEN_HEIGHT - button_height - 60  # Y-position
 
 buttons = [
     Button("F1\nEdit Game", button_margin + 0 * (button_width + button_margin), y_position, button_width, button_height, edit_game),
@@ -93,7 +122,8 @@ key_to_action = {
     pygame.K_F7: lambda: print("F7 clicked!"),  # no action assigned for F7 yet
     pygame.K_F8: view_game,
     pygame.K_F10: flick_sync,
-    pygame.K_F12: clear_game
+    pygame.K_F12: clear_game,
+    pygame.K_i: add_player
 }
 
 # main loop
@@ -115,7 +145,12 @@ while running:
         # check for keypress events
         elif event.type == pygame.KEYDOWN:
             if event.key in key_to_action:
-                key_to_action[event.key]() 
+                key_to_action[event.key]()
+            # elif event.key == pygame.K_i:
+            #     id = int(input("Enter player ID: "))
+            #     codename = input("Enter player codename: ").strip()
+            #     equipment_code = input(f"Enter equipment code for {codename}: ")
+            #     add_player_transmit(id, codename, equipment_code)
 
 
     if on_splash_screen:
@@ -126,9 +161,21 @@ while running:
     else:
         # draw buttons screen
         screen.fill((255, 255, 255))
+        ###################################################
+        BLACK = (0,0,0)
+        WHITE = (255,255,255)
+        pygame.display.set_caption("Entry Terminal")
+        font = pygame.font.Font(None, 36)
+        text = font.render("Edit Current Game",True, BLACK)
+        screen.blit(text, (280, 0))
+        pygame.draw.rect(screen, BLACK, pygame.Rect(0, 550, 800, 40))
+        text = font.render("<Del> to Delete Player, <i> to Insert Player or Edit Codename", True, WHITE)
+        screen.blit(text, (50,560))
+        ###################################################
         for button in buttons:
             button.draw()
         pygame.display.update()
 
 pygame.quit()
+udp_socket.close()
 sys.exit()
