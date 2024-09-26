@@ -2,6 +2,7 @@ import pygame
 import sys
 import socket
 import random
+import subprocess
 
 pygame.init()
 pygame.mixer.init()
@@ -27,16 +28,16 @@ splash_sound.play()
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
-# # UDP Client function
-# def add_player_transmit(id, codename, equipment_code):
-# 	print(f"Adding player: Id = {id}, Codename = {codename}")
-# 	client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# 	server_address = ('localhost', 7500)
-# 	message = f"Equipment code for {codename} is {equipment_code}"
-# 	client_socket.sendto(message, server_address)
+# Functions to start the server and client
+def start_server():
+    subprocess.Popen(['python', 'server.py'])  # Start the UDP server
 
-# 	print(f"Transmitted equipment code '{equipment_code}' for player {codename}")
-# 	client_socket.close()
+def start_client():
+    subprocess.Popen(['python', 'client.py'])  # Start the UDP client
+
+# Call these functions to start the server and client
+start_server()
+start_client()
 
 # UDP setup
 UDP_IP = "127.0.0.1"  # replace with your target IP
