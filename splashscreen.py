@@ -26,16 +26,16 @@ splash_sound.play()
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
-# UDP Client function
-def add_player_transmit(id, codename, equipment_code):
-	print(f"Adding player: Id = {id}, Codename = {codename}")
-	client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	server_address = ('localhost', 7500)
-	message = f"Equipment code for {codename} is {equipment_code}"
-	client_socket.sendto(message, server_address)
+# # UDP Client function
+# def add_player_transmit(id, codename, equipment_code):
+# 	print(f"Adding player: Id = {id}, Codename = {codename}")
+# 	client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# 	server_address = ('localhost', 7500)
+# 	message = f"Equipment code for {codename} is {equipment_code}"
+# 	client_socket.sendto(message, server_address)
 
-	print(f"Transmitted equipment code '{equipment_code}' for player {codename}")
-	client_socket.close()
+# 	print(f"Transmitted equipment code '{equipment_code}' for player {codename}")
+# 	client_socket.close()
     
 # button class
 class Button:
@@ -128,11 +128,11 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key in key_to_action:
                 key_to_action[event.key]()
-            elif event.key == pygame.K_i:
-                id = int(input("Enter player ID: "))
-                codename = input("Enter player codename: ").strip()
-                equipment_code = input(f"Enter equipment code for {codename}: ")
-                add_player_transmit(id, codename, equipment_code)
+            # elif event.key == pygame.K_i:
+            #     id = int(input("Enter player ID: "))
+            #     codename = input("Enter player codename: ").strip()
+            #     equipment_code = input(f"Enter equipment code for {codename}: ")
+            #     add_player_transmit(id, codename, equipment_code)
 
 
     if on_splash_screen:
