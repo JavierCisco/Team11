@@ -30,10 +30,10 @@ pygame.time.set_timer(show_main_screen_event, 3000)
 
 # Functions to start the server and client
 def start_server():
-    subprocess.Popen(['python', 'server.py'])  # Start the UDP server
+    subprocess.Popen(['python3', 'server.py'])  # Start the UDP server
 
 def start_client():
-    subprocess.Popen(['python', 'client.py'])  # Start the UDP client
+    subprocess.Popen(['python3', 'client.py'])  # Start the UDP client
 
 # Call these functions to start the server and client
 start_server()
