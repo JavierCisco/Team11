@@ -97,10 +97,15 @@ def add_player():
     print(f"Player {player_id} added!")
     send_equipment_code(player_id)
 
+def end_game():
+    pygame.quit()
+    udp_socket.close()
+    sys.exit()
+
 button_width = 100  # width 
-button_height = 65  # height
+button_height = 60  # height
 button_margin = 10  # margin
-y_position = SCREEN_HEIGHT - button_height - 60  # Y-position
+y_position = SCREEN_HEIGHT - button_height - 80  # Y-position
 
 buttons = [
     Button("F1\nEdit Game", button_margin + 0 * (button_width + button_margin), y_position, button_width, button_height, edit_game),
@@ -123,7 +128,8 @@ key_to_action = {
     pygame.K_F8: view_game,
     pygame.K_F10: flick_sync,
     pygame.K_F12: clear_game,
-    pygame.K_i: add_player
+    pygame.K_i: add_player,
+    pygame.K_ESCAPE: end_game
 }
 
 # main loop
@@ -176,6 +182,4 @@ while running:
             button.draw()
         pygame.display.update()
 
-pygame.quit()
-udp_socket.close()
-sys.exit()
+end_game
