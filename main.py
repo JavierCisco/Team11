@@ -7,8 +7,8 @@ import subprocess
 pygame.init()
 pygame.mixer.init()
 # screen dimensions
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 800
 
 # set up the screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -97,8 +97,8 @@ def add_player():
     print(f"Player {player_id} added!")
     send_equipment_code(player_id)
 
-button_width = 90  # width 
-button_height = 50  # height
+button_width = 100  # width 
+button_height = 65  # height
 button_margin = 10  # margin
 y_position = SCREEN_HEIGHT - button_height - 60  # Y-position
 
