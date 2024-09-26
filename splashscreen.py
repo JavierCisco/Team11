@@ -1,6 +1,7 @@
 import pygame
 import sys
 import socket
+import random
 
 pygame.init()
 pygame.mixer.init()
@@ -36,6 +37,16 @@ pygame.time.set_timer(show_main_screen_event, 3000)
 
 # 	print(f"Transmitted equipment code '{equipment_code}' for player {codename}")
 # 	client_socket.close()
+
+# UDP setup
+UDP_IP = "127.0.0.1"  # replace with your target IP
+UDP_PORT = 7500       # the port to broadcast equipment codes
+udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+def send_equipment_code(code):
+    message = str(code).encode('utf-8')
+    udp_socket.sendto(message, (UDP_IP, UDP_PORT))
+    print(f"Sent equipment code: {code}")
     
 # button class
 class Button:
@@ -80,6 +91,11 @@ def flick_sync():
 def clear_game():
     print("Clear Game clicked!")
 
+def add_player():
+    player_id = random.randint(1000, 9999)  # This would be dynamically generated or provided
+    print(f"Player {player_id} added!")
+    send_equipment_code(player_id)
+
 button_width = 90  # width 
 button_height = 50  # height
 button_margin = 10  # margin
@@ -105,7 +121,8 @@ key_to_action = {
     pygame.K_F7: lambda: print("F7 clicked!"),  # no action assigned for F7 yet
     pygame.K_F8: view_game,
     pygame.K_F10: flick_sync,
-    pygame.K_F12: clear_game
+    pygame.K_F12: clear_game,
+    pygame.K_i: add_player
 }
 
 # main loop
@@ -159,4 +176,5 @@ while running:
         pygame.display.update()
 
 pygame.quit()
+udp_socket.close()
 sys.exit()
