@@ -10,6 +10,6 @@ INSERT INTO players (id, codename)
 VALUES (1, 'Opus');
 
 --inserting a player manually first to see    -francisco
-Insert into players values(1, 'Michael Jackson');
+Insert into players values(2, 'Michael Jackson');
 
 --making sure that this is the db branch

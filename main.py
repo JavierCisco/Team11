@@ -102,6 +102,12 @@ def end_game():
     udp_socket.close()
     sys.exit()
 
+
+# ###########################################################################
+def test_func():
+    pass
+    ##################      FH      #######################################
+
 button_width = 100  # width 
 button_height = 60  # height
 button_margin = 10  # margin
@@ -129,7 +135,8 @@ key_to_action = {
     pygame.K_F10: flick_sync,
     pygame.K_F12: clear_game,
     pygame.K_i: add_player,
-    pygame.K_ESCAPE: end_game
+    pygame.K_ESCAPE: end_game,
+    pygame.K_t: test_func
 }
 
 # main loop
