@@ -5,13 +5,13 @@ import random
 import subprocess
 from database import *
 
-# inititalizing pygame
+# initializing pygame
 pygame.init()
 pygame.mixer.init()
 
 # screen dimensions
 SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 800
+SCREEN_HEIGHT = 600
 
 # set up the screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -23,11 +23,10 @@ try:
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except Exception as error:
-    print(f'Error loading Splash screen: {error}')
+    print("Error in Splash Screen: {error}")
     pygame.quit()
     sys.exit()
 splash_sound.play()
-
 # set a timer to show the main screen after 3 seconds
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
@@ -99,19 +98,23 @@ def clear_game():
 def add_player():
     player_id = random.randint(1000, 9999)  # This would be dynamically generated or provided
     send_equipment_code(player_id)
-    # database stuff, so far you add name thru terminal sorry - FH
     name = input('Name of player?:')
     insert_player(player_id, name)
     print(f"Added:\nName: {name}\nID: {player_id}")
+
+def delete_player():
+    playID = input('ID of player to remove?:')
+    remove_player(playID)
+    print(f'Player {playID} removed!')
 
 def end_game():
     bye_data()	
     pygame.quit()
     udp_socket.close()
     sys.exit()
-    
+
 def test_func():
-    # usable with the 't' key, just used to view the database table
+# usable with 't' for now just used to view table players
     view_database()
 
 button_width = 100  # width 
@@ -141,6 +144,7 @@ key_to_action = {
     pygame.K_F10: flick_sync,
     pygame.K_F12: clear_game,
     pygame.K_i: add_player,
+    pygame.K_BACKSPACE: delete_player,
     pygame.K_ESCAPE: end_game,
     pygame.K_t: test_func
 }
