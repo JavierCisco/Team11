@@ -40,6 +40,13 @@ def insert_player(id, name):
 	except Exception as error:
 		print(f'Error inserting a player: {error}')
 
+def remove_player(playerID):
+	try:
+		cursor.execute('''DELETE FROM players WHERE id = %s;''', [playerID])
+		conn.commit()
+	except Exception as error:
+		print(f'Error removing a player: {error}')
+
 # cursor would close before being accessed in main, this fixed the bug, i call this in main function 'end_game()'
 #	so it will for sure execute, as long as the game closes, so will this block execute
 def bye_data():
