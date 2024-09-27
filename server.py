@@ -15,17 +15,19 @@ UDPServerSocket.bind((localIP, localPort))
 print("UDP server up and listening")
 
 # Listen for incoming datagrams
-
-while(True):
-
-    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-    message = bytesAddressPair[0]
-    address = bytesAddressPair[1]
-    clientMsg = "Message from Client:{}".format(message)
-    clientIP  = "Client IP Address:{}".format(address)
+try:
+    while(True):
     
-    print(clientMsg)
-    print(clientIP)
-
-    # Sending a reply to client
-    UDPServerSocket.sendto(bytesToSend, address)
+        bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+        message = bytesAddressPair[0]
+        address = bytesAddressPair[1]
+        clientMsg = "Message from Client:{}".format(message)
+        clientIP  = "Client IP Address:{}".format(address)
+        
+        print(clientMsg)
+        print(clientIP)
+    
+        # Sending a reply to client
+        UDPServerSocket.sendto(bytesToSend, address)
+finally:
+    UDPServerSocket.close()
