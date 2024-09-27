@@ -9,6 +9,8 @@ bytesToSend         = str.encode(msgFromServer)
 # Create a datagram socket
 UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
+UDPServerSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
 # Bind to address and ip
 UDPServerSocket.bind((localIP, localPort))
 
