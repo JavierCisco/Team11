@@ -6,9 +6,9 @@ connection_params = {
     'dbname': 'photon',
     'user': 'student',
     # commented out, so imma leave em that way
-    'password': 'student',
-    'host': 'localhost',
-    'port': '5432'
+    # 'password': 'student',
+    # 'host': 'localhost',
+    # 'port': '5432'
 }
 
 try:
