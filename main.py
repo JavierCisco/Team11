@@ -3,9 +3,12 @@ import sys
 import socket
 import random
 import subprocess
+from database import *
 
+# inititalizing pygame
 pygame.init()
 pygame.mixer.init()
+
 # screen dimensions
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 800
@@ -19,11 +22,12 @@ try:
     splash_sound = pygame.mixer.Sound("theme.mp3")
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
-except pygame.error:
-    print("Error: logo.png not found.")
+except Exception as error:
+    print(f'Error loading Splash screen: {error}')
     pygame.quit()
     sys.exit()
 splash_sound.play()
+
 # set a timer to show the main screen after 3 seconds
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
@@ -94,19 +98,21 @@ def clear_game():
 
 def add_player():
     player_id = random.randint(1000, 9999)  # This would be dynamically generated or provided
-    print(f"Player {player_id} added!")
     send_equipment_code(player_id)
+    # database stuff, so far you add name thru terminal sorry - FH
+    name = input('Name of player?:')
+    insert_player(player_id, name)
+    print(f"Added:\nName: {name}\nID: {player_id}")
 
 def end_game():
+    bye_data()	
     pygame.quit()
     udp_socket.close()
     sys.exit()
-
-
-# ###########################################################################
+    
 def test_func():
-    pass
-    ##################      FH      #######################################
+    # usable with the 't' key, just used to view the database table
+    view_database()
 
 button_width = 100  # width 
 button_height = 60  # height
