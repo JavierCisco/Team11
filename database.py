@@ -5,10 +5,6 @@ from psycopg2 import sql
 connection_params = {
     'dbname': 'photon',
     'user': 'student',
-    # commented out, so imma leave em that way
-    #'password': 'student',
-    #'host': 'localhost',
-    #'port': '5432'
 }
 
 # declaring the vars here so that i can update them in the block, and keep them in the global scope and use them in functions that follow
