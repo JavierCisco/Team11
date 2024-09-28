@@ -51,7 +51,68 @@ def send_equipment_code(code):
     message = str(code).encode('utf-8')
     udp_socket.sendto(message, (UDP_IP, UDP_PORT))
     print(f"Sent equipment code: {code}")
-    
+
+# TextBox class for table cells
+class TextBox:
+    def __init__(self, x, y, width, height):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.color_inactive = pygame.Color('black')
+        self.color_active = pygame.Color('dodgerblue2')
+        self.color = self.color_inactive
+        self.text = ''
+        self.font = pygame.font.Font(None, 20)
+        self.active = False
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                self.active = not self.active
+            else:
+                self.active = False
+            self.color = self.color_active if self.active else self.color_inactive
+
+        if event.type == pygame.KEYDOWN:
+            if self.active:
+                if event.key == pygame.K_RETURN:
+                    print(self.text)
+                elif event.key == pygame.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                else:
+                    self.text += event.unicode
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect, 2)
+        text_surface = self.font.render(self.text, True, (0, 0, 0))
+        screen.blit(text_surface, (self.rect.x + 5, self.rect.y + 5))
+        self.rect.w = max(100, text_surface.get_width() + 10)
+
+# Create two tables of text boxes (2 columns x 10 rows each)
+table1 = []
+table2 = []
+cell_width = 100
+cell_height = 40
+
+# Table 1 (left side - columns 1 and 2)
+for row in range(10):
+    table_row = []
+    for col in range(2):
+        x = 100 + col * cell_width
+        y = 50 + row * cell_height
+        table_row.append(TextBox(x, y, cell_width, cell_height))
+    table1.append(table_row)
+
+# Table 2 (right side - columns 3 and 4)
+for row in range(10):
+    table_row = []
+    for col in range(2):
+        x = 450 + col * cell_width
+        y = 50 + row * cell_height
+        table_row.append(TextBox(x, y, cell_width, cell_height))
+    table2.append(table_row)
+
+# Combine both tables
+tables = [table1, table2]
+
 # button class
 class Button:
     def __init__(self, text, x, y, width, height, action=None):
@@ -174,6 +235,12 @@ while running:
             #     codename = input("Enter player codename: ").strip()
             #     equipment_code = input(f"Enter equipment code for {codename}: ")
             #     add_player_transmit(id, codename, equipment_code)
+        
+        # Handle events for text boxes in the tables
+        for table in tables:
+            for row in table:
+                for text_box in row:
+                    text_box.handle_event(event)
 
 
     if on_splash_screen:
@@ -195,6 +262,13 @@ while running:
         text = font.render("<Del> to Delete Player, <i> to Insert Player or Edit Codename", True, WHITE)
         screen.blit(text, (50,560))
         ###################################################
+        
+        # Draw the tables
+        for table in tables:
+            for row in table:
+                for text_box in row:
+                    text_box.draw(screen)
+                    
         for button in buttons:
             button.draw()
         pygame.display.update()
