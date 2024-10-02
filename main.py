@@ -1,9 +1,8 @@
 import pygame
 import sys
-import socket
 import random
-import subprocess
 from database import *
+from socks import *
 
 # initializing pygame
 pygame.init()
@@ -31,26 +30,9 @@ splash_sound.play()
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
-# Functions to start the server and client
-def start_server():
-    subprocess.Popen(['python3', 'server.py'])  # Start the UDP server
-
-def start_client():
-    subprocess.Popen(['python3', 'client.py'])  # Start the UDP client
-
-# Call these functions to start the server and client
+# Call functions (from socks.py)  to start the server and client
 start_server()
 start_client()
-
-# UDP setup
-UDP_IP = "127.0.0.1"  # replace with your target IP
-UDP_PORT = 7500       # the port to broadcast equipment codes
-udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-def send_equipment_code(code):
-    message = str(code).encode('utf-8')
-    udp_socket.sendto(message, (UDP_IP, UDP_PORT))
-    print(f"Sent equipment code: {code}")
 
 # TextBox class for table cells
 class TextBox:
