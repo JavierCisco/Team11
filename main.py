@@ -1,36 +1,8 @@
-import sys
-import random
-from database import *
-from socks import *
-from User-Interface import *
+from UserInterface import *
 
 # Call functions (from socks.py)  to start the server and client
 start_server()
 start_client()
-
-
-def add_player():
-    player_id = random.randint(1000, 9999)  # This would be dynamically generated or provided
-    send_equipment_code(player_id)
-    name = input('Name of player?:')
-    insert_player(player_id, name)
-    print(f"Added:\nName: {name}\nID: {player_id}")
-
-def delete_player():
-    playID = input('ID of player to remove?:')
-    remove_player(playID)
-    print(f'Player {playID} removed!')
-
-# CHECK AND ADD THE FUNCTIONS TO THEIR RESPECTIVE FILES TO MAKE SURE THEY GET CALLED PROPERLY FOR THE SPECFIC INSTANCE
-def end_game():
-    bye_data()	
-    pygame.quit()
-    udp_socket.close()
-    sys.exit()
-
-def test_func():
-# usable with 't' for now just used to view table players
-    view_database()
 
 
 # main loop
