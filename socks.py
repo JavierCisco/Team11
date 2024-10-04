@@ -19,3 +19,6 @@ def send_equipment_code(code):
     message = str(code).encode('utf-8')
     udp_socket.sendto(message, (UDP_IP, UDP_PORT))
     print(f"Sent equipment code: {code}")
+    
+def bye_socks():
+    udp_socket.close()
