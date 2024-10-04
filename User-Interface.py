@@ -1,4 +1,8 @@
+import sys
 import pygame
+import random
+from database import *
+from socks import *
 
 # initializing pygame
 pygame.init()
@@ -125,6 +129,9 @@ class Button:
 
 # BUTTON FUNCTIONS
 #######################################################################
+def bye_pygame():
+    pygame.quit()
+
 def edit_game():
     print("Edit Game clicked!")
 
@@ -145,6 +152,28 @@ def flick_sync():
 
 def clear_game():
     print("Clear Game clicked!")
+
+def add_player():
+    player_id = random.randint(1000, 9999)  # This would be dynamically generated or provided
+    send_equipment_code(player_id)
+    name = input('Name of player?:')
+    insert_player(player_id, name)
+    print(f"Added:\nName: {name}\nID: {player_id}")
+
+def delete_player():
+    playID = input('ID of player to remove?:')
+    remove_player(playID)
+    print(f'Player {playID} removed!')
+
+def end_game():
+    bye_data()
+    bye_pygame()
+    bye_socks()
+    sys.exit()
+
+def test_func():
+# usable with 't' for now just used to view table players
+    view_database()
 
 #######################################################################
 
@@ -185,4 +214,3 @@ key_to_action = {
 }
 
 #######################################################################
-
