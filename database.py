@@ -1,13 +1,18 @@
 import psycopg2
 from psycopg2 import sql
 
+
+################################################################################################################################################
+# Establishing connection with database in VMachine
+################################################################################################################################################
+
 # define connection parameters
 connection_params = {
     'dbname': 'photon',
     'user': 'student',
 }
 
-# declaring the vars here so that i can update them in the block, and keep them in the global scope and use them in functions that follow
+# declaring the vars here so that i can  keep them in the global scope
 conn = None
 cursor = None
 	
@@ -18,7 +23,14 @@ try:
     cursor = conn.cursor()
 except Exception as error:
     print(f'Error connecting to PostgreSQL database: {error}')
-    
+################################################################################################################################################
+
+
+
+################################################################################################################################################
+# Functions that perform queries using try-catch blocks to prevent errors from happening and protecting memory.
+################################################################################################################################################
+
 # executing queries functions
 def view_database():
 	try:
@@ -42,6 +54,13 @@ def remove_player(playerID):
 		conn.commit()
 	except Exception as error:
 		print(f'Error removing a player: {error}')
+################################################################################################################################################
+
+
+
+################################################################################################################################################
+# Function that closes the cursor and the connection
+################################################################################################################################################
 
 # cursor would close before being accessed in main, this fixed the bug, i call this in main function 'end_game()'
 #	so it will for sure execute, as long as the game closes, so will this block execute
