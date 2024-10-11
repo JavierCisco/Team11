@@ -8,8 +8,12 @@ from socks import *
 pygame.init()
 pygame.mixer.init()
 
+
+
+################################################################################################################################################
 # SPLASH SCREEN 
-#######################################################################
+################################################################################################################################################
+
 # screen dimensions
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
@@ -24,7 +28,7 @@ try:
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except Exception as error:
-    print("Error in Splash Screen: {error}")
+    print(f"Error in Splash Screen: {error}")
     pygame.quit()
     sys.exit()
 splash_sound.play()
@@ -32,11 +36,14 @@ splash_sound.play()
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
-#######################################################################
+################################################################################################################################################
 
 
+
+################################################################################################################################################
 # TABLE + TEXTBOX SET UP
-#######################################################################
+################################################################################################################################################
+
 # TextBox class for table cells
 class TextBox:
     def __init__(self, x, y, width, height):
@@ -98,13 +105,14 @@ for row in range(10):
 # Combine both tables
 tables = [table1, table2]
 
-#######################################################################
+################################################################################################################################################
 
 
+
+################################################################################################################################################
 # BUTTON CLASS
-#######################################################################
+################################################################################################################################################
 
-# button class
 class Button:
     def __init__(self, text, x, y, width, height, action=None):
         self.text_lines = text.split('\n')
@@ -124,14 +132,15 @@ class Button:
         if self.rect.collidepoint(pos) and self.action:
             self.action()  # call action if button is clicked (fix so it's connected to keyboard)
 
-#######################################################################
+################################################################################################################################################
 
 
-# BUTTON FUNCTIONS
-#######################################################################
-def bye_pygame():
-    pygame.quit()
 
+################################################################################################################################################
+# FUNCTIONS CALLED IN MAIN.PY
+################################################################################################################################################
+
+# BUTTONS INGAME
 def edit_game():
     print("Edit Game clicked!")
 
@@ -153,6 +162,7 @@ def flick_sync():
 def clear_game():
     print("Clear Game clicked!")
 
+# INTERACT WITH DATABASE.PY 
 def add_player():
     player_id = random.randint(1000, 9999)  # This would be dynamically generated or provided
     send_equipment_code(player_id)
@@ -165,26 +175,31 @@ def delete_player():
     remove_player(playID)
     print(f'Player {playID} removed!')
 
+# TERMINATE GAME - CALLED IN MAIN.PY
 def end_game():
     bye_data()
-    bye_pygame()
+    pygame.quit()
     bye_socks()
     sys.exit()
 
+# simply used to test things we are trying to make work ULtra secret
 def test_func():
-# usable with 't' for now just used to view table players
+# usable with 'v' for now just used to view table players
     view_database()
 
-#######################################################################
+################################################################################################################################################
 
 
+
+################################################################################################################################################
 # BUTTONS AND THEIR ACTIONS
-#######################################################################
+################################################################################################################################################
 
-button_width = 100  # width 
-button_height = 60  # height
-button_margin = 10  # margin
-y_position = SCREEN_HEIGHT - button_height - 80  # Y-position
+#Button dimensions
+button_width = 100   
+button_height = 60
+button_margin = 10
+y_position = SCREEN_HEIGHT - button_height - 80
 
 buttons = [
     Button("F1\nEdit Game", button_margin + 0 * (button_width + button_margin), y_position, button_width, button_height, edit_game),
@@ -213,4 +228,4 @@ key_to_action = {
     pygame.K_t: test_func
 }
 
-#######################################################################
+################################################################################################################################################
