@@ -223,6 +223,8 @@ key_to_action = {
 running = True
 on_splash_screen = True
 entry_screen_active = True
+play_action = True
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -267,10 +269,10 @@ while running:
         pygame.display.update()
 
         if countdown_left <= 0:
+            print("Countdown ended")
             countdown_active = False
-            screen.fill((0, 0, 0))  # Blank screen
-            pygame.display.update()
-            print("Countdown ended, blank screen displayed!")
+            play_action = True
+      
     elif entry_screen_active:
         # draw buttons screen
         screen.fill((255, 255, 255))
@@ -296,4 +298,13 @@ while running:
             button.draw()
         pygame.display.update()
 
+    # game action screen
+    elif play_action:
+            # Display a screen with half green and half red
+            screen.fill((0, 255, 0), pygame.Rect(0, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT))  # Green left half
+            screen.fill((255, 0, 0), pygame.Rect(SCREEN_WIDTH // 2, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT))  # Red right half
+            pygame.display.update()
+
+
 end_game
+
