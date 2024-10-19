@@ -141,8 +141,17 @@ def edit_game():
 def game_parameters():
     print("Game Parameters clicked!")
 
+# Countdown variables
+countdown_active = False
+countdown_time = 30  # 30 seconds countdown
+start_ticks = 0  # tracks when countdown started
+
 def start_game():
     print("Start Game clicked!")
+    global countdown_active, start_ticks
+    countdown_active = True  # Start the countdown
+    start_ticks = pygame.time.get_ticks()  # Get the current time in milliseconds
+    print("Countdown started!")
 
 def pre_entered_games():
     print("PreEntered Games clicked!")
@@ -213,6 +222,7 @@ key_to_action = {
 # main loop
 running = True
 on_splash_screen = True
+entry_screen_active = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -248,7 +258,25 @@ while running:
         screen.fill((0, 0, 0))
         screen.blit(logo, ((SCREEN_WIDTH - logo.get_width()) // 2, 50))
         pygame.display.update()
-    else:
+    elif countdown_active:
+        # Handle the countdown
+        entry_screen_active = False
+        seconds_passed = (pygame.time.get_ticks() - start_ticks) // 1000
+        countdown_left = max(countdown_time - seconds_passed, 0)
+
+        # Display countdown
+        screen.fill((255, 255, 255))  # White background
+        font = pygame.font.Font(None, 100)
+        countdown_text = font.render(str(countdown_left), True, (0, 0, 0))  # Black countdown
+        screen.blit(countdown_text, (SCREEN_WIDTH // 2 - countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 - countdown_text.get_height() // 2))
+        pygame.display.update()
+
+        if countdown_left <= 0:
+            countdown_active = False
+            screen.fill((0, 0, 0))  # Blank screen
+            pygame.display.update()
+            print("Countdown ended, blank screen displayed!")
+    elif entry_screen_active:
         # draw buttons screen
         screen.fill((255, 255, 255))
         ###################################################
