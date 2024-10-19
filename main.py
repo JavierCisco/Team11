@@ -141,8 +141,17 @@ def edit_game():
 def game_parameters():
     print("Game Parameters clicked!")
 
+# Countdown variables
+countdown_active = False
+countdown_time = 30  # 30 seconds countdown
+start_ticks = 0  # tracks when countdown started
+
 def start_game():
     print("Start Game clicked!")
+    global countdown_active, start_ticks
+    countdown_active = True  # Start the countdown
+    start_ticks = pygame.time.get_ticks()  # Get the current time in milliseconds
+    print("Countdown started!")
 
 def pre_entered_games():
     print("PreEntered Games clicked!")
@@ -213,6 +222,9 @@ key_to_action = {
 # main loop
 running = True
 on_splash_screen = True
+entry_screen_active = True
+play_action = True
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -230,11 +242,6 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key in key_to_action:
                 key_to_action[event.key]()
-            # elif event.key == pygame.K_i:
-            #     id = int(input("Enter player ID: "))
-            #     codename = input("Enter player codename: ").strip()
-            #     equipment_code = input(f"Enter equipment code for {codename}: ")
-            #     add_player_transmit(id, codename, equipment_code)
         
         # Handle events for text boxes in the tables
         for table in tables:
@@ -242,13 +249,35 @@ while running:
                 for text_box in row:
                     text_box.handle_event(event)
 
-
+    #splash screen
     if on_splash_screen:
         # display the splash screen with image
         screen.fill((0, 0, 0))
         screen.blit(logo, ((SCREEN_WIDTH - logo.get_width()) // 2, 50))
         pygame.display.update()
-    else:
+    
+    #countdown screen
+    elif countdown_active:
+        # Handle the countdown
+        entry_screen_active = False
+        seconds_passed = (pygame.time.get_ticks() - start_ticks) // 1000
+        countdown_left = max(countdown_time - seconds_passed, 0)
+
+        # Display countdown
+        screen.fill((255, 255, 255))  # White background
+        font = pygame.font.Font(None, 100)
+        countdown_text = font.render(str(countdown_left), True, (0, 0, 0))  # Black countdown
+        screen.blit(countdown_text, (SCREEN_WIDTH // 2 - countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 - countdown_text.get_height() // 2))
+        pygame.display.update()
+
+        # check if countdown is finished
+        if countdown_left <= 0:
+            print("Countdown ended")
+            countdown_active = False
+            play_action = True
+        
+    #entry screen
+    elif entry_screen_active:
         # draw buttons screen
         screen.fill((255, 255, 255))
         ###################################################
@@ -262,8 +291,20 @@ while running:
         text = font.render("<Del> to Delete Player, <i> to Insert Player or Edit Codename", True, WHITE)
         screen.blit(text, (50,560))
         ###################################################
-        
-        # Draw the tables
+
+        # draw column labels (left)
+        label_font = pygame.font.Font(None, 24)
+        name_label_left = label_font.render("Name", True, BLACK)
+        id_label_left = label_font.render("ID", True, BLACK)
+        screen.blit(name_label_left, (100, 30))
+        screen.blit(id_label_left, (200, 30)) 
+        # draw column labels (right)
+        name_label_right = label_font.render("Name", True, BLACK)
+        id_label_right = label_font.render("ID", True, BLACK)
+        screen.blit(name_label_right, (450, 30)) 
+        screen.blit(id_label_right, (550, 30)) 
+  
+        # draw the tables
         for table in tables:
             for row in table:
                 for text_box in row:
@@ -273,4 +314,12 @@ while running:
             button.draw()
         pygame.display.update()
 
+    # game action screen
+    elif play_action:
+            # Display a screen with half green and half red
+            screen.fill((0, 255, 0), pygame.Rect(0, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT))  # Green left half
+            screen.fill((255, 0, 0), pygame.Rect(SCREEN_WIDTH // 2, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT))  # Red right half
+            pygame.display.update()
+        
 end_game
+
