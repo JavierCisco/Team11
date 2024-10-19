@@ -242,12 +242,6 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key in key_to_action:
                 key_to_action[event.key]()
-            # elif event.key == pygame.K_i:
-            #     id = int(input("Enter player ID: "))
-            #     codename = input("Enter player codename: ").strip()
-            #     equipment_code = input(f"Enter equipment code for {codename}: ")
-            #     add_player_transmit(id, codename, equipment_code)
-
         
         # Handle events for text boxes in the tables
         for table in tables:
@@ -278,7 +272,7 @@ while running:
             print("Countdown ended")
             countdown_active = False
             play_action = True
-
+      
     elif entry_screen_active:
         # draw buttons screen
         screen.fill((255, 255, 255))
