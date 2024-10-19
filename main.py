@@ -300,9 +300,9 @@ while running:
 
     # game action screen
     elif play_action:
-            # Display a screen with half green and half red
-            screen.fill((0, 255, 0), pygame.Rect(0, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT))  # Green left half
-            screen.fill((255, 0, 0), pygame.Rect(SCREEN_WIDTH // 2, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT))  # Red right half
+            # display a screen with half green and half red
+            screen.fill((0, 255, 0), pygame.Rect(0, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT)) 
+            screen.fill((255, 0, 0), pygame.Rect(SCREEN_WIDTH // 2, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT))
             pygame.display.update()
 
 
