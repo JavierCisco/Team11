@@ -26,3 +26,10 @@ Traceback (most recent call last):
                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ValueError: invalid literal for int() with base 10: ''
 
+
+Traceback (most recent call last):
+  File "/home/student/Downloads/main.py", line 112, in <module>
+    table_row.append(TextBox(x, y, cell_width, cell_height, table_id=0, row=row, col=col))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: TextBox.__init__() got an unexpected keyword argument 'row'
+
