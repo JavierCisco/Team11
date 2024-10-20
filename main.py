@@ -166,11 +166,31 @@ def clear_game():
     print("Clear Game clicked!")
 
 def add_player():
-    player_id = random.randint(1000, 9999)  # This would be dynamically generated or provided
-    send_equipment_code(player_id)
-    name = input('Name of player?:')
-    insert_player(player_id, name)
-    print(f"Added:\nName: {name}\nID: {player_id}")
+# Assuming the first column (table1) stores the IDs and the second column stores the player names
+    player_id = None
+    name = None
+    
+    # Iterate over the first table to find an empty slot
+    for row in table1:
+        id_box = row[0]  # First column for player IDs
+        name_box = row[1]  # Second column for player names
+        
+        # Check if both ID and Name are provided
+        if id_box.text != '' and name_box.text != '':
+            try:
+                player_id = int(id_box.text)  # Get player ID from TextBox
+                name = name_box.text  # Get player name from TextBox
+                break  # Found valid player info, exit loop
+            except ValueError:
+                print("Invalid ID, please enter numeric values only.")
+                return
+    
+    if player_id and name:
+        send_equipment_code(player_id)  # Send the player ID via UDP
+        insert_player(player_id, name)  # Insert into the database
+        print(f"Added:\nName: {name}\nID: {player_id}")
+    else:
+        print("Player ID or Name missing, please fill both fields.")
 
 def delete_player():
     playID = input('ID of player to remove?:')
@@ -214,7 +234,7 @@ key_to_action = {
     pygame.K_F10: flick_sync,
     pygame.K_F12: clear_game,
     pygame.K_i: add_player,
-    pygame.K_BACKSPACE: delete_player,
+    #pygame.K_BACKSPACE: delete_player,
     pygame.K_ESCAPE: end_game,
     pygame.K_t: test_func
 }
@@ -249,12 +269,14 @@ while running:
                 for text_box in row:
                     text_box.handle_event(event)
 
-
+    #splash screen
     if on_splash_screen:
         # display the splash screen with image
         screen.fill((0, 0, 0))
         screen.blit(logo, ((SCREEN_WIDTH - logo.get_width()) // 2, 50))
         pygame.display.update()
+    
+    #countdown screen
     elif countdown_active:
         # Handle the countdown
         entry_screen_active = False
@@ -268,11 +290,13 @@ while running:
         screen.blit(countdown_text, (SCREEN_WIDTH // 2 - countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 - countdown_text.get_height() // 2))
         pygame.display.update()
 
+        # check if countdown is finished
         if countdown_left <= 0:
             print("Countdown ended")
             countdown_active = False
             play_action = True
-      
+        
+    #entry screen
     elif entry_screen_active:
         # draw buttons screen
         screen.fill((255, 255, 255))
@@ -287,8 +311,20 @@ while running:
         text = font.render("<Del> to Delete Player, <i> to Insert Player or Edit Codename", True, WHITE)
         screen.blit(text, (50,560))
         ###################################################
-        
-        # Draw the tables
+
+        # draw column labels (left)
+        label_font = pygame.font.Font(None, 24)
+        name_label_left = label_font.render("Name", True, BLACK)
+        id_label_left = label_font.render("ID", True, BLACK)
+        screen.blit(name_label_left, (100, 30))
+        screen.blit(id_label_left, (200, 30)) 
+        # draw column labels (right)
+        name_label_right = label_font.render("Name", True, BLACK)
+        id_label_right = label_font.render("ID", True, BLACK)
+        screen.blit(name_label_right, (450, 30)) 
+        screen.blit(id_label_right, (550, 30)) 
+  
+        # draw the tables
         for table in tables:
             for row in table:
                 for text_box in row:
@@ -304,7 +340,7 @@ while running:
             screen.fill((0, 255, 0), pygame.Rect(0, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT))  # Green left half
             screen.fill((255, 0, 0), pygame.Rect(SCREEN_WIDTH // 2, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT))  # Red right half
             pygame.display.update()
-
-
+        
 end_game
+
 
