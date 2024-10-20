@@ -197,15 +197,12 @@ def prompt_codename(player_id):
                     if event.key == pygame.K_RETURN:
                         # When Enter is pressed, end the input
                         codename = codename_textbox.text
-                        insert_player(player_id, codename)
-                        input_active = False
-                        print(f"Codename entered: {codename}")
-                    elif event.key == pygame.K_BACKSPACE:
-                        # Backspace removes last character
-                        code_name = code_name[:-1]
-                    else:
-                        # Append the typed character
-                        code_name += event.unicode
+                        if codename:
+                            insert_player(player_id, codename)
+                            input_active = False
+                            print(f"Codename entered: {codename}")
+                        else:
+                            print("Codename can't be empty")
                 
         screen.fill((255,255,255))
         font = pygame.font.Font(None, 36)
