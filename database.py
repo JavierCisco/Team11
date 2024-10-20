@@ -46,7 +46,7 @@ def remove_player(playerID):
 
 def query_codename(player_id):
 	try:
-		cursor.execute('SELECT codename FROM players WHERE id = %;', (player_id,))
+		cursor.execute('SELECT codename FROM players WHERE id = %s;', (player_id,))
 		result = cursor.fetchone()
 		if result:
 			return result[0]
