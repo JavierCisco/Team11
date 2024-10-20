@@ -207,17 +207,19 @@ def prompt_codename(player_id):
 
 def add_player():
     global active_table_id
-    global selected_row, selected_col
-    if selected_row is None or selected_col is None:
-        print("No row/column selected")
-        return
+    # global selected_row, selected_col
+    # if selected_row is None or selected_col is None:
+    #     print("No row/column selected")
+    #     return
 
-    if active_table_id == 1:
-        player_id_text = table1[selected_row][0].text.strip()
-        equipment_code_text = table1[selected_row][1].text.strip()
+    if active_table_id == 0:
+        player_id_text = table1[0][0].text
+        print(f"playerID is {player_id_text}")
+        equipment_code_text = table1[0][1].text
     else:
-        player_id_text = table2[selected_row][0].text.strip()
-        equipment_code_text = table2[selected_row][1].text.strip()
+        player_id_text = table2[0][0].text
+        print(f"playerIDTable2 is {player_id_text}")
+        equipment_code_text = table2[0][1].text
 
     # Ensure both fields are not empty before converting
     if not player_id_text or not equipment_code_text:
