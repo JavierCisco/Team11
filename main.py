@@ -203,6 +203,7 @@ def prompt_codename(player_id):
                             print(f"Codename entered: {codename}")
                         else:
                             print("Codename can't be empty")
+                        active = True
                 
         screen.fill((255,255,255))
         font = pygame.font.Font(None, 36)
