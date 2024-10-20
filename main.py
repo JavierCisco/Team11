@@ -63,6 +63,8 @@ class TextBox:
         self.font = pygame.font.Font(None, 20)
         self.active = False
         self.table_id = table_id
+        self.row = row
+        self.col = col
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -84,7 +86,7 @@ class TextBox:
     def is_clicked(self, pos):
         if self.rect.collidepoint(pos):
             self.active = True
-            return self.table_id
+            return self.table_id, self.row, self.col
         return None
 
     def draw(self, screen):
@@ -107,7 +109,7 @@ for row in range(10):
     for col in range(2):
         x = 100 + col * cell_width
         y = 50 + row * cell_height
-        table_row.append(TextBox(x, y, cell_width, cell_height, table_id=0))
+        table_row.append(TextBox(x, y, cell_width, cell_height, table_id=0, row=row, col=col))
     table1.append(table_row)
 
 # Table 2 (right side - columns 3 and 4)
@@ -116,7 +118,7 @@ for row in range(10):
     for col in range(2):
         x = 450 + col * cell_width
         y = 50 + row * cell_height
-        table_row.append(TextBox(x, y, cell_width, cell_height, table_id=1))
+        table_row.append(TextBox(x, y, cell_width, cell_height, table_id=1, row=row, col=col))
     table2.append(table_row)
 
 # Combine both tables
@@ -213,7 +215,6 @@ def prompt_codename(player_id):
 
 def add_player():
     global active_table_id
-    global selected_row, selected_col
     if selected_row is None or selected_col is None:
         print("No row/column selected")
         return
@@ -328,10 +329,10 @@ while running:
             for table in tables:
                 for row in table:
                     for text_box in row:
-                        clicked_table_id = text_box.is_clicked(mouse_pos)
-                        if clicked_table_id is not None:
-                            active_table_id = clicked_table_id
-                            handle_box_click(selected_row, selected_col)
+                        clicked = text_box.is_clicked(mouse_pos)
+                        if clicked is not None:
+                            active_table_id, row, col = clicked
+                            handle_box_click(row, col)
                             # text_box.active = True
                 
         # check for keypress events
