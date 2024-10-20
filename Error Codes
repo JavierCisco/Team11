@@ -16,3 +16,13 @@ Traceback (most recent call last):
     equipment_code = equipment_code_box.text  
                      ^^^^^^^^^^^^^^^^^^^^^^^
 AttributeError: 'str' object has no attribute 'text'
+
+
+Traceback (most recent call last):
+  File "/home/student/Downloads/main.py", line 331, in <module>
+    key_to_action[event.key]()
+  File "/home/student/Downloads/main.py", line 219, in add_player
+    player_id = int(table2[selected_row][0].text)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: ''
+
