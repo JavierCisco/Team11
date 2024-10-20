@@ -191,12 +191,22 @@ def prompt_codename(player_id):
                 sys.exit()
             codename_textbox.handle_event(event)
             if event.type == pygame.KEYDOWN:
-                codename = codename_textbox.text
-                if codename:
-                    insert_player(player_id, codename)
-                    input_active = False
+                if event.key == pygame.K_RETURN:
+                    # When Enter is pressed, end the input
+                    codename = codename_textbox.text
+                    if codename:
+                        insert_player(player_id, codename)
+                        input_active = False
+                        print(f"Codename entered: {codename}")
+                    else:
+                        print("Codename cannot be empty")
+                elif event.key == pygame.K_BACKSPACE:
+                    # Backspace removes last character
+                    codename = codename[:-1]
                 else:
-                    print("Codename cannot be empty")
+                    # Append the typed character
+                    codename += event.unicode
+                
         screen.fill((255,255,255))
         font = pygame.font.Font(None, 36)
         text = font.render(f"Enter Codename for Player ID {player_id}:", True, (0,0,0))
@@ -207,19 +217,19 @@ def prompt_codename(player_id):
 
 def add_player():
     global active_table_id
-    # global selected_row, selected_col
-    # if selected_row is None or selected_col is None:
-    #     print("No row/column selected")
-    #     return
+    global selected_row, selected_col
+    if selected_row is None or selected_col is None:
+        print("No row/column selected")
+        return
 
     if active_table_id == 0:
-        player_id_text = table1[0][0].text
+        player_id_text = table1[selected_row][0].text
         print(f"playerID is {player_id_text}")
-        equipment_code_text = table1[0][1].text
+        equipment_code_text = table1[selected_row][1].text
     else:
-        player_id_text = table2[0][0].text
+        player_id_text = table2[selected_row][0].text
         print(f"playerIDTable2 is {player_id_text}")
-        equipment_code_text = table2[0][1].text
+        equipment_code_text = table2[selected_row][1].text
 
     # Ensure both fields are not empty before converting
     if not player_id_text or not equipment_code_text:
