@@ -4,6 +4,7 @@ import socket
 import random
 import subprocess
 from database import *
+from action_display import display_action_screen  # Import the action display function
 
 # initializing pygame
 pygame.init()
@@ -142,6 +143,9 @@ def game_parameters():
     print("Game Parameters clicked!")
 
 # Countdown variables
+##############################
+action = False
+##############################
 countdown_active = False
 countdown_time = 30  # 30 seconds countdown
 start_ticks = 0  # tracks when countdown started
@@ -155,6 +159,11 @@ def start_game():
 
 def pre_entered_games():
     print("PreEntered Games clicked!")
+    #########################
+    global action
+    action = True
+    print("Action Display")
+    #########################
 
 def view_game():
     print("View Game clicked!")
@@ -164,6 +173,11 @@ def flick_sync():
 
 def clear_game():
     print("Clear Game clicked!")
+    global tables
+    for table in tables:
+        for row in table:
+            for text_box in row:
+                text_box.text = ""
 
 def add_player():
     player_id = random.randint(1000, 9999)  # This would be dynamically generated or provided
@@ -242,6 +256,13 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key in key_to_action:
                 key_to_action[event.key]()
+            #######################################
+            elif event.key == pygame.K_F5:
+                action = True
+                
+            elif event.key == pygame.K_F5:
+                clear_game
+            #######################################
         
         # Handle events for text boxes in the tables
         for table in tables:
@@ -272,7 +293,13 @@ while running:
             print("Countdown ended")
             countdown_active = False
             play_action = True
-      
+    #########################################################################
+    elif action:
+        entry_screen_active = False
+        action = False
+        play_action = True
+        pygame.display.update()       
+    ##########################################################################   
     elif entry_screen_active:
         # draw buttons screen
         screen.fill((255, 255, 255))
@@ -300,10 +327,21 @@ while running:
 
     # game action screen
     elif play_action:
-            # display a screen with half green and half red
-            screen.fill((0, 255, 0), pygame.Rect(0, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT)) 
-            screen.fill((255, 0, 0), pygame.Rect(SCREEN_WIDTH // 2, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT))
-            pygame.display.update()
+        #temporary action log, team scores, and time
+            action_log = ["Player A hit Player B", "Player C hit Player D", "Player E hit the base"]
+            red_team_score = 5000
+            green_team_score = 4500
+            game_time_remaining = 60
+            # List of players on each team
+            red_team_players = ["Player A", "Player B", "Player C"]
+            green_team_players = ["Player D", "Player E", "Player F"]
+
+            #display a screen with half green and half red
+            #screen.fill((0, 255, 0), pygame.Rect(0, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT)) 
+            #screen.fill((255, 0, 0), pygame.Rect(SCREEN_WIDTH // 2, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT))
+            #pygame.display.update()
+            #display_action_screen(screen, action_log, red_team_score, green_team_score, game_time_remaining)
+            display_action_screen(screen, action_log, red_team_score, green_team_score, game_time_remaining, red_team_players, green_team_players)
 
 
 end_game
