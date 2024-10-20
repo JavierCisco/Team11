@@ -202,11 +202,11 @@ def add_player():
     global active_table_id
 
     if active_table_id == 1:
-        player_id = table1[0][0].text
-        equipment_code_box = table1[0][1].text
+        player_id = int(table1[0][0].text)
+        equipment_code_box = int(table1[0][1].text)
     else:
-        player_id = table2[0][0].text
-        equipment_code_box = table2[0][1].text
+        player_id = int(table2[0][0].text)
+        equipment_code_box = int(table2[0][1].text)
 
     # Search databse for existing codename
     code_name = query_codename(player_id)
