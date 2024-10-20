@@ -212,25 +212,19 @@ def add_player():
         print("No row/column selected")
         return
 
-    try:
-        if active_table_id == 1:
-            player_id_text = table1[selected_row][0].text.strip()
-            equipment_code_text = table1[selected_row][1].text.strip()
-        else:
-            player_id_text = table2[selected_row][0].text.strip()
-            equipment_code_text = table2[selected_row][1].text.strip()
+    if active_table_id == 1:
+        player_id_text = table1[selected_row][0].text.strip()
+        equipment_code_text = table1[selected_row][1].text.strip()
+    else:
+        player_id_text = table2[selected_row][0].text.strip()
+        equipment_code_text = table2[selected_row][1].text.strip()
 
-        # Ensure both fields are not empty before converting
-        if not player_id_text or not equipment_code_text:
-            print("Player ID or Equipment Code cannot be empty.")
-            return
-
-        player_id = int(player_id_text)
-        equipment_code = int(equipment_code_text)
-
-    except ValueError as ve:
-        print(f"Error converting input to integer: {ve}")
+    # Ensure both fields are not empty before converting
+    if not player_id_text or not equipment_code_text:
+        print("Player ID or Equipment Code cannot be empty.")
         return
+    player_id = player_id_text  # Keep as string
+    equipment_code = equipment_code_text
 
     # Search databse for existing codename
     code_name = query_codename(player_id)
@@ -253,15 +247,9 @@ def add_player():
     #         break
     #     except ValueError:
     #         print("Invalid input. Please enter an integer.")   
-
-    try:
-        equipment_id = int(equipment_code_text)  # Convert to integer
-    except ValueError:
-        print("Invalid equipment ID. Please enter an integer.")
-        equipment_code_text = ''  # Clear the text box for a new entry
-        return      
+    
     # Broadcast equipment code
-    send_equipment_code(equipment_id)
+    send_equipment_code(equipment_code)
     
 
 def delete_player():
