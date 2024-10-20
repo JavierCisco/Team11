@@ -98,6 +98,8 @@ table1 = []
 table2 = []
 cell_width = 100
 cell_height = 40
+selected_row = None
+selected_col = None
 
 # Table 1 (left side - columns 1 and 2)
 for row in range(10):
@@ -172,6 +174,11 @@ def flick_sync():
 def clear_game():
     print("Clear Game clicked!")
 
+def handle_box_click(row, col):
+    global selected_row, selected_col
+    selected_row = row
+    selected_col = col
+
 # Function to handle a pop-up screen to enter codename when one is not found
 def prompt_codename(player_id):
     input_active = True
@@ -200,13 +207,17 @@ def prompt_codename(player_id):
 
 def add_player():
     global active_table_id
+    global selected_row, selected_col
+    if selected_row is None or selected_col is None:
+        print("No row/column selected")
+        return
 
     if active_table_id == 1:
-        player_id = int(table1[0][0].text)
-        equipment_code_box = int(table1[0][1].text)
+        player_id = int(table1[selected_row][0].text)
+        equipment_code = int(table1[selected_row][1].text)
     else:
-        player_id = int(table2[0][0].text)
-        equipment_code_box = int(table2[0][1].text)
+        player_id = int(table2[selected_row][0].text)
+        equipment_code = int(table2[selected_row][1].text)
 
     # Search databse for existing codename
     code_name = query_codename(player_id)
@@ -311,6 +322,7 @@ while running:
                         clicked_table_id = text_box.is_clicked(mouse_pos)
                         if clicked_table_id is not None:
                             active_table_id = clicked_table_id
+                            handle_box_click(row.index(text_box), table.index(row))
                             # text_box.active = True
                 
         # check for keypress events
