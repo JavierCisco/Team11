@@ -67,7 +67,7 @@ class TextBox:
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
-                self.active = not self.active
+                self.active = True
             else:
                 self.active = False
             self.color = self.color_active if self.active else self.color_inactive
@@ -309,6 +309,7 @@ while running:
                         clicked_table_id = text_box.is_clicked(mouse_pos)
                         if clicked_table_id is not None:
                             active_table_id = clicked_table_id
+                            text_box.active = True
                 
         # check for keypress events
         elif event.type == pygame.KEYDOWN:
@@ -316,10 +317,10 @@ while running:
                 key_to_action[event.key]()
         
         # Handle events for text boxes in the tables
-        # for table in tables:
-        #     for row in table:
-        #         for text_box in row:
-        #             text_box.handle_event(event)
+        for table in tables:
+            for row in table:
+                for text_box in row:
+                    text_box.handle_event(event)
 
 
     if on_splash_screen:
