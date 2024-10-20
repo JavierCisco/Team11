@@ -198,7 +198,7 @@ def prompt_codename(player_id):
         pygame.display.update()
 
 active_table_id = None
-def add_player(table_id):
+def add_player():
     if active_table_id == 1:
         player_id = table1[0][0].text
         equipment_code_box = table1[0][1].text
