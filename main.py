@@ -212,12 +212,25 @@ def add_player():
         print("No row/column selected")
         return
 
-    if active_table_id == 1:
-        player_id = int(table1[selected_row][0].text)
-        equipment_code = int(table1[selected_row][1].text)
-    else:
-        player_id = int(table2[selected_row][0].text)
-        equipment_code = int(table2[selected_row][1].text)
+    try:
+        if active_table_id == 1:
+            player_id_text = table1[selected_row][0].text.strip()
+            equipment_code_text = table1[selected_row][1].text.strip()
+        else:
+            player_id_text = table2[selected_row][0].text.strip()
+            equipment_code_text = table2[selected_row][1].text.strip()
+
+        # Ensure both fields are not empty before converting
+        if not player_id_text or not equipment_code_text:
+            print("Player ID or Equipment Code cannot be empty.")
+            return
+
+        player_id = int(player_id_text)
+        equipment_code = int(equipment_code_text)
+
+    except ValueError as ve:
+        print(f"Error converting input to integer: {ve}")
+        return
 
     # Search databse for existing codename
     code_name = query_codename(player_id)
@@ -225,9 +238,12 @@ def add_player():
     # If no codename found, enter a new codename
     if not code_name:
         print("Code name not found for player ID:", player_id)
-        prompt_codename(player_id)
-        insert_player(player_id, code_name)
-        print(f"Player added:\nName: {code_name}\nID: {player_id}")
+        code_name = prompt_codename(player_id)
+        if code_name:
+            insert_player(player_id, code_name)
+            print(f"Player added:\nName: {code_name}\nID: {player_id}")
+        else:
+            print("No codename entered")
     else:
         print(f"Player found:\nName: {code_name}\nID: {player_id}")
 
@@ -238,15 +254,12 @@ def add_player():
     #     except ValueError:
     #         print("Invalid input. Please enter an integer.")   
 
-    equipment_id = None
-    while equipment_id is None:
-        try:
-            equipment_code = equipment_code_box.text  
-            equipment_id = int(equipment_code)  
-            break  
-        except ValueError:
-            print("Invalid equipment ID. Please enter an integer.")
-            equipment_code_box.text = ''     
+    try:
+        equipment_id = int(equipment_code_text)  # Convert to integer
+    except ValueError:
+        print("Invalid equipment ID. Please enter an integer.")
+        equipment_code_text = ''  # Clear the text box for a new entry
+        return      
     # Broadcast equipment code
     send_equipment_code(equipment_id)
     
