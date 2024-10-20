@@ -197,8 +197,10 @@ def prompt_codename(player_id):
         codename_textbox.draw(screen)
         pygame.display.update()
 
-active_table_id = None
+
 def add_player():
+    global active_table_id
+
     if active_table_id == 1:
         player_id = table1[0][0].text
         equipment_code_box = table1[0][1].text
@@ -212,7 +214,7 @@ def add_player():
     # If no codename found, enter a new codename
     if not code_name:
         print("Code name not found for player ID:", player_id)
-        code_name = input("Enter new code name for this player:")
+        prompt_codename(player_id)
         insert_player(player_id, code_name)
         print(f"Player added:\nName: {code_name}\nID: {player_id}")
     else:
@@ -309,7 +311,7 @@ while running:
                         clicked_table_id = text_box.is_clicked(mouse_pos)
                         if clicked_table_id is not None:
                             active_table_id = clicked_table_id
-                            text_box.active = True
+                            # text_box.active = True
                 
         # check for keypress events
         elif event.type == pygame.KEYDOWN:
