@@ -325,12 +325,14 @@ while running:
             mouse_pos = event.pos
             for button in buttons:
                 button.is_clicked(mouse_pos)
-            for table_idx, table in enumerate(tables):  # table_idx keeps track of the table index
-                for row_idx, row in enumerate(table):  # row_idx keeps track of the row index
-                    for col_idx, text_box in enumerate(row):  # col_idx keeps track of the column index
-                        if text_box.is_clicked(mouse_pos):  # If the text box is clicked
-                            active_table_id = table_idx + 1  # Update active table (assuming table_idx starts from 0)
-                            handle_box_click(row_idx, col_idx)
+            for table in tables:
+                for row in table:
+                    for text_box in row:
+                        clicked_table_id = text_box.is_clicked(mouse_pos)
+                        if clicked_table_id is not None:
+                            active_table_id = clicked_table_id
+                            handle_box_click(selected_row, selected_col)
+                            # text_box.active = True
                 
         # check for keypress events
         elif event.type == pygame.KEYDOWN:
