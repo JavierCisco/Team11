@@ -54,7 +54,7 @@ def send_equipment_code(code):
 
 # TextBox class for table cells
 class TextBox:
-    def __init__(self, x, y, width, height, table_id=None):
+    def __init__(self, x, y, width, height, table_id=None, row=None, col=None):
         self.rect = pygame.Rect(x, y, width, height)
         self.color_inactive = pygame.Color('black')
         self.color_active = pygame.Color('dodgerblue2')
