@@ -183,8 +183,7 @@ def handle_box_click(row, col):
 def prompt_codename(player_id):
     input_active = True
     codename_textbox = TextBox(300,200,400,40)
-    active = False
-    code_name = ""
+   
 
     while input_active:
         for event in pygame.event.get():
@@ -193,17 +192,16 @@ def prompt_codename(player_id):
                 sys.exit()
             codename_textbox.handle_event(event)
             if event.type == pygame.KEYDOWN:
-                if active:
-                    if event.key == pygame.K_RETURN:
-                        # When Enter is pressed, end the input
-                        codename = codename_textbox.text
-                        if codename:
-                            insert_player(player_id, codename)
-                            input_active = False
-                            print(f"Codename entered: {codename}")
-                        else:
-                            print("Codename can't be empty")
-                        active = True
+                if event.key == pygame.K_RETURN:
+                    # When Enter is pressed, end the input
+                    codename = codename_textbox.text
+                    input_active = False
+                    if codename:
+                        insert_player(player_id, codename)
+                        input_active = False
+                        print(f"Codename entered: {codename}")
+                    else:
+                        print("Codename can't be empty")
                 
         screen.fill((255,255,255))
         font = pygame.font.Font(None, 36)
