@@ -54,7 +54,7 @@ def send_equipment_code(code):
 
 # TextBox class for table cells
 class TextBox:
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, table_id=None):
         self.rect = pygame.Rect(x, y, width, height)
         self.color_inactive = pygame.Color('black')
         self.color_active = pygame.Color('dodgerblue2')
@@ -62,6 +62,7 @@ class TextBox:
         self.text = ''
         self.font = pygame.font.Font(None, 20)
         self.active = False
+        self.table_id = table_id
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -79,6 +80,12 @@ class TextBox:
                     self.text = self.text[:-1]
                 else:
                     self.text += event.unicode
+    
+    def is_clicked(self, pos):
+        if self.rect.collidepoint(pos):
+            self.active = True
+            return self.table_id
+        return None
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, self.rect, 2)
@@ -98,7 +105,7 @@ for row in range(10):
     for col in range(2):
         x = 100 + col * cell_width
         y = 50 + row * cell_height
-        table_row.append(TextBox(x, y, cell_width, cell_height))
+        table_row.append(TextBox(x, y, cell_width, cell_height, table_id=0))
     table1.append(table_row)
 
 # Table 2 (right side - columns 3 and 4)
@@ -107,7 +114,7 @@ for row in range(10):
     for col in range(2):
         x = 450 + col * cell_width
         y = 50 + row * cell_height
-        table_row.append(TextBox(x, y, cell_width, cell_height))
+        table_row.append(TextBox(x, y, cell_width, cell_height, table_id=1))
     table2.append(table_row)
 
 # Combine both tables
@@ -165,8 +172,39 @@ def flick_sync():
 def clear_game():
     print("Clear Game clicked!")
 
-def add_player():
-    player_id = input("Enter player ID number:")
+# Function to handle a pop-up screen to enter codename when one is not found
+def prompt_codename(player_id):
+    input_active = True
+    codename_textbox = TextBox(300,200,400,40)
+
+    while input_active:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            codename_textbox.handle_event(event)
+            if event.type == pygame.KEYDOWN:
+                codename = codename_textbox.text
+                if codename:
+                    insert_player(player_id, codename)
+                    input_active = False
+                else:
+                    print("Codename cannot be empty")
+        screen.fill((255,255,255))
+        font = pygame.font.Font(None, 36)
+        text = font.render(f"Enter Codename for Player ID {player_id}:", True, (0,0,0))
+        screen.blit(text, (300, 150))
+        codename_textbox.draw(screen)
+        pygame.display.update()
+
+active_table_id = None
+def add_player(table_id):
+    if active_table_id == 1:
+        player_id = table1[0][0].text
+        equipment_code_box = table1[0][1].text
+    else:
+        player_id = table2[0][0].text
+        equipment_code_box = table2[0][1].text
 
     # Search databse for existing codename
     code_name = query_codename(player_id)
@@ -180,12 +218,22 @@ def add_player():
     else:
         print(f"Player found:\nName: {code_name}\nID: {player_id}")
 
-    while True:
+    # while True:
+    #     try:
+    #         equipment_id = int(input("Enter equipment ID (must be an integer): "))
+    #         break
+    #     except ValueError:
+    #         print("Invalid input. Please enter an integer.")   
+
+    equipment_id = None
+    while equipment_id is None:
         try:
-            equipment_id = int(input("Enter equipment ID (must be an integer): "))
-            break
+            equipment_code = equipment_code_box.text  
+            equipment_id = int(equipment_code)  
+            break  
         except ValueError:
-            print("Invalid input. Please enter an integer.")        
+            print("Invalid equipment ID. Please enter an integer.")
+            equipment_code_box.text = ''     
     # Broadcast equipment code
     send_equipment_code(equipment_id)
     
@@ -255,6 +303,12 @@ while running:
             mouse_pos = event.pos
             for button in buttons:
                 button.is_clicked(mouse_pos)
+            for table in tables:
+                for row in table:
+                    for text_box in row:
+                        clicked_table_id = text_box.is_clicked(mouse_pos)
+                        if clicked_table_id is not None:
+                            active_table_id = clicked_table_id
                 
         # check for keypress events
         elif event.type == pygame.KEYDOWN:
@@ -262,10 +316,10 @@ while running:
                 key_to_action[event.key]()
         
         # Handle events for text boxes in the tables
-        for table in tables:
-            for row in table:
-                for text_box in row:
-                    text_box.handle_event(event)
+        # for table in tables:
+        #     for row in table:
+        #         for text_box in row:
+        #             text_box.handle_event(event)
 
 
     if on_splash_screen:
