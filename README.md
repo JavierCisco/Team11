@@ -34,7 +34,7 @@ Team 11's work for Software Engineering project.
 - F3: Starts Game and Countdown timer. It also allows user to move onto game action screen.
 - Buttons are on screen, and the keys to do certain actions are also described on the screen.
 - Please click back to the game screen to keep interacting with the game.
-- On the entry screen, there are two sets of tables, one for each team. For each side, the left box is where the user will enter the player id, and the right box is where they will enter the equipment code.
+- On the entry screen, there are two sets of tables, one for each team. For each side, the left box is where the user will enter the player id, and the right box is where they will enter the equipment code. To add player to game first fill out both player id and equipment code. Click on player id box and hit F7. If prompted to enter code name, type code name into box and hit enter. 
 
 Github Names and Real Names:
 - JavierCisco = Francisco Hernandez
