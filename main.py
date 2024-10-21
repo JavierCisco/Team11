@@ -299,7 +299,7 @@ buttons = [
     Button("F1\nEdit Game", button_margin + 0 * (button_width + button_margin), y_position, button_width, button_height, edit_game),
     Button("F2\nGame\nParameters", button_margin + 1 * (button_width + button_margin), y_position, button_width, button_height, game_parameters),
     Button("F3\nStart Game", button_margin + 2 * (button_width + button_margin), y_position, button_width, button_height, start_game),
-    Button("F5\nPreEntered Games", button_margin + 3 * (button_width + button_margin), y_position, button_width, button_height, pre_entered_games),
+    Button("F5\nAction Screen", button_margin + 3 * (button_width + button_margin), y_position, button_width, button_height, pre_entered_games),
     Button("F7\nAdd\nPlayer", button_margin + 4 * (button_width + button_margin), y_position, button_width, button_height),
     Button("F8\nView Game", button_margin + 5 * (button_width + button_margin), y_position, button_width, button_height, view_game),
     Button("F10\nFlick Sync", button_margin + 6 * (button_width + button_margin), y_position, button_width, button_height, flick_sync),
