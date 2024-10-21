@@ -319,7 +319,7 @@ key_to_action = {
     # pygame.K_i: add_player,
     pygame.K_BACKSPACE: delete_player,
     pygame.K_ESCAPE: end_game,
-    pygame.K_t: test_func
+    pygame.K_F6: test_func
 }
 
 # main loop
