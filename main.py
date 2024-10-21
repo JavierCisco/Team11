@@ -55,7 +55,7 @@ def send_equipment_code(code):
 
 # TextBox class for table cells
 class TextBox:
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, table_id=None, row=None, col=None):
         self.rect = pygame.Rect(x, y, width, height)
         self.color_inactive = pygame.Color('black')
         self.color_active = pygame.Color('dodgerblue2')
@@ -63,11 +63,14 @@ class TextBox:
         self.text = ''
         self.font = pygame.font.Font(None, 20)
         self.active = False
+        self.table_id = table_id
+        self.row = row
+        self.col = col
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
-                self.active = not self.active
+                self.active = True
             else:
                 self.active = False
             self.color = self.color_active if self.active else self.color_inactive
@@ -80,6 +83,12 @@ class TextBox:
                     self.text = self.text[:-1]
                 else:
                     self.text += event.unicode
+    
+    def is_clicked(self, pos):
+        if self.rect.collidepoint(pos):
+            self.active = True
+            return self.table_id, self.row, self.col
+        return None
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, self.rect, 2)
@@ -92,6 +101,8 @@ table1 = []
 table2 = []
 cell_width = 100
 cell_height = 40
+selected_row = None
+selected_col = None
 
 # Table 1 (left side - columns 1 and 2)
 for row in range(10):
@@ -99,7 +110,7 @@ for row in range(10):
     for col in range(2):
         x = 100 + col * cell_width
         y = 50 + row * cell_height
-        table_row.append(TextBox(x, y, cell_width, cell_height))
+        table_row.append(TextBox(x, y, cell_width, cell_height, table_id=0, row=row, col=col))
     table1.append(table_row)
 
 # Table 2 (right side - columns 3 and 4)
@@ -108,7 +119,7 @@ for row in range(10):
     for col in range(2):
         x = 450 + col * cell_width
         y = 50 + row * cell_height
-        table_row.append(TextBox(x, y, cell_width, cell_height))
+        table_row.append(TextBox(x, y, cell_width, cell_height, table_id=1, row=row, col=col))
     table2.append(table_row)
 
 # Combine both tables
@@ -179,8 +190,64 @@ def clear_game():
             for text_box in row:
                 text_box.text = ""
 
+def handle_box_click(row, col):
+    global selected_row, selected_col
+    selected_row = row
+    selected_col = col
+
+# Function to handle a pop-up screen to enter codename when one is not found
+def prompt_codename(player_id):
+    input_active = True
+    codename_textbox = TextBox(300,200,400,40)
+   
+
+    while input_active:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            codename_textbox.handle_event(event)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    # When Enter is pressed, end the input
+                    codename = codename_textbox.text
+                    input_active = False
+                    if codename:
+                        insert_player(player_id, codename)
+                        input_active = False
+                        print(f"Codename entered: {codename}")
+                    else:
+                        print("Codename can't be empty")
+                
+        screen.fill((255,255,255))
+        font = pygame.font.Font(None, 36)
+        text = font.render(f"Enter Codename for Player ID {player_id}:", True, (0,0,0))
+        screen.blit(text, (300, 150))
+        codename_textbox.draw(screen)
+        pygame.display.update()
+
+
 def add_player():
-    player_id = input("Enter player ID number:")
+    global active_table_id
+    if selected_row is None or selected_col is None:
+        print("No row/column selected")
+        return
+
+    if active_table_id == 0:
+        player_id_text = table1[selected_row][0].text
+        print(f"playerID is {player_id_text}")
+        equipment_code_text = table1[selected_row][1].text
+    else:
+        player_id_text = table2[selected_row][0].text
+        print(f"playerIDTable2 is {player_id_text}")
+        equipment_code_text = table2[selected_row][1].text
+
+    # Ensure both fields are not empty before converting
+    if not player_id_text or not equipment_code_text:
+        print("Player ID or Equipment Code cannot be empty.")
+        return
+    player_id = player_id_text  # Keep as string
+    equipment_code = equipment_code_text
 
     # Search databse for existing codename
     code_name = query_codename(player_id)
@@ -188,20 +255,24 @@ def add_player():
     # If no codename found, enter a new codename
     if not code_name:
         print("Code name not found for player ID:", player_id)
-        code_name = input("Enter new code name for this player:")
-        insert_player(player_id, code_name)
-        print(f"Player added:\nName: {code_name}\nID: {player_id}")
+        code_name = prompt_codename(player_id)
+        if code_name:
+            insert_player(player_id, code_name)
+            print(f"Player added:\nName: {code_name}\nID: {player_id}")
+        else:
+            print("No codename entered")
     else:
         print(f"Player found:\nName: {code_name}\nID: {player_id}")
 
-    while True:
-        try:
-            equipment_id = int(input("Enter equipment ID (must be an integer): "))
-            break
-        except ValueError:
-            print("Invalid input. Please enter an integer.")        
+    # while True:
+    #     try:
+    #         equipment_id = int(input("Enter equipment ID (must be an integer): "))
+    #         break
+    #     except ValueError:
+    #         print("Invalid input. Please enter an integer.")   
+    
     # Broadcast equipment code
-    send_equipment_code(equipment_id)
+    send_equipment_code(equipment_code)
     
 
 def delete_player():
@@ -229,7 +300,7 @@ buttons = [
     Button("F2\nGame\nParameters", button_margin + 1 * (button_width + button_margin), y_position, button_width, button_height, game_parameters),
     Button("F3\nStart Game", button_margin + 2 * (button_width + button_margin), y_position, button_width, button_height, start_game),
     Button("F5\nPreEntered Games", button_margin + 3 * (button_width + button_margin), y_position, button_width, button_height, pre_entered_games),
-    Button("F7\nTBD", button_margin + 4 * (button_width + button_margin), y_position, button_width, button_height),
+    Button("F7\nAdd\nPlayer", button_margin + 4 * (button_width + button_margin), y_position, button_width, button_height),
     Button("F8\nView Game", button_margin + 5 * (button_width + button_margin), y_position, button_width, button_height, view_game),
     Button("F10\nFlick Sync", button_margin + 6 * (button_width + button_margin), y_position, button_width, button_height, flick_sync),
     Button("F12\nClear Game", button_margin + 7 * (button_width + button_margin), y_position, button_width, button_height, clear_game),
@@ -241,11 +312,11 @@ key_to_action = {
     pygame.K_F2: game_parameters,
     pygame.K_F3: start_game,
     pygame.K_F5: pre_entered_games,
-    pygame.K_F7: lambda: print("F7 clicked!"),  # no action assigned for F7 yet
+    pygame.K_F7: add_player,  # no action assigned for F7 yet
     pygame.K_F8: view_game,
     pygame.K_F10: flick_sync,
     pygame.K_F12: clear_game,
-    pygame.K_i: add_player,
+    # pygame.K_i: add_player,
     pygame.K_BACKSPACE: delete_player,
     pygame.K_ESCAPE: end_game,
     pygame.K_t: test_func
@@ -269,6 +340,14 @@ while running:
             mouse_pos = event.pos
             for button in buttons:
                 button.is_clicked(mouse_pos)
+            for table in tables:
+                for row in table:
+                    for text_box in row:
+                        clicked = text_box.is_clicked(mouse_pos)
+                        if clicked is not None:
+                            active_table_id, row, col = clicked
+                            handle_box_click(row, col)
+                            # text_box.active = True
                 
         # check for keypress events
         elif event.type == pygame.KEYDOWN:
