@@ -4,8 +4,8 @@ Team 11's work for Software Engineering project.
 
 # How to Run Project:
 # FIRST please Make sure you have Python and pygame (therefore inferring pip as well) downloaded. 
-Commands:
-sudo apt update
+# Commands:
+sudo apt update/n
 sudo apt install python3 python3-pip
 pip3 install pygame
 
