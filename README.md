@@ -3,8 +3,34 @@ Team 11's work for Software Engineering project.
 
 
 # How to Run Project:
-#FIRST please Make sure you have Python and pygame (therefore inferring pip as well) downloaded. I am assuming that you already have the #Psycopg2 module installed on your virtual machine for the database. Because that is what the example on Mr. Strother's Github was using. I # am saying this because my virutal machine did not have it installed, and I had to. So I hope y'all have it already. 
+# FIRST please Make sure you have Python and pygame (therefore inferring pip as well) downloaded. 
+Commands:
+sudo apt update
+sudo apt install python3 python3-pip
+pip3 install pygame
 
+# Then open a terminal and type python3 then hit enter. Then use the following commands to verify the installation.
+# Commands:
+import pygame
+print(pygame.__version__)
+
+# If there are no errors then the installation was successful.
+
+# Download #Psycopg2 module for the database if your virtual machine does not already have it.
+# Commands:
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo apt install libpq-dev python3-dev
+pip3 install psycopg2
+pip3 install psycopg2-binary **use this if there are issues when compiling the extension**
+
+# Then open a terminal and type python3 then hit enter. Then use the following commands to verify the installation.
+# Commands:
+import psycopg2
+
+# If there are no errors then the installation was successful.
+
+# SECOND...
 - Download all files in our main branch.
 - to initiate program, run the command: 'python3 main.py' in the terminal
 
@@ -13,7 +39,6 @@ Team 11's work for Software Engineering project.
 - Input is given through the terminal
 - please click back to the game screen to keep interacting with the game
 - Use 'Escape' key to quit program
-
 
 Github Names and Real Names:
 - JavierCisco = Francisco Hernandez
