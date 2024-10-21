@@ -3,30 +3,26 @@ Team 11's work for Software Engineering project.
 
 
 # How to Run Project:
-# FIRST please Make sure you have Python and pygame (therefore inferring pip as well) downloaded. 
-# Commands:
+# FIRST please Make sure you have Python and pygame (therefore inferring pip as well) downloaded. Use the following commands.
 - sudo apt update
 - sudo apt install python3 python3-pip
 - pip3 install pygame
 
 # Then open a terminal and type python3 then hit enter. Then use the following commands to verify the installation.
-# Commands:
-import pygame
-print(pygame.__version__)
+- import pygame
+- print(pygame.__version__)
 
 # If there are no errors then the installation was successful.
 
-# Download #Psycopg2 module for the database if your virtual machine does not already have it.
-# Commands:
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-sudo apt install libpq-dev python3-dev
-pip3 install psycopg2
-pip3 install psycopg2-binary **use this if there are issues when compiling the extension**
+# Download #Psycopg2 module for the database if your virtual machine does not already have it. Use the following commands.
+- sudo apt update
+- sudo apt install postgresql postgresql-contrib
+- sudo apt install libpq-dev python3-dev
+- pip3 install psycopg2
+- pip3 install psycopg2-binary **use this if there are issues when compiling the extension**
 
 # Then open a terminal and type python3 then hit enter. Then use the following commands to verify the installation.
-# Commands:
-import psycopg2
+-import psycopg2
 
 # If there are no errors then the installation was successful.
 
