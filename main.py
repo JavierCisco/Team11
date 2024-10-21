@@ -4,7 +4,7 @@ import socket
 import random
 import subprocess
 from database import *
-from action_display import display_action_screen  # Import the action display function
+from action_display import *  # Import the action display function
 
 # initializing pygame
 pygame.init()
@@ -172,7 +172,7 @@ def pre_entered_games():
     print("PreEntered Games clicked!")
     #########################
     global action
-    action = True
+    action = not action
     print("Action Display")
     #########################
 
@@ -316,7 +316,6 @@ key_to_action = {
     pygame.K_F8: view_game,
     pygame.K_F10: flick_sync,
     pygame.K_F12: clear_game,
-    # pygame.K_i: add_player,
     pygame.K_BACKSPACE: delete_player,
     pygame.K_ESCAPE: end_game,
     pygame.K_F6: test_func
@@ -353,13 +352,6 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key in key_to_action:
                 key_to_action[event.key]()
-            #######################################
-            elif event.key == pygame.K_F5:
-                action = True
-                
-            elif event.key == pygame.K_F5:
-                clear_game
-            #######################################
         
         # Handle events for text boxes in the tables
         for table in tables:
@@ -393,7 +385,7 @@ while running:
 
     #########################################################################
     elif action:
-        entry_screen_active = False
+        entry_screen_active = not entry_screen_active
         action = False
         play_action = True
         pygame.display.update()       
