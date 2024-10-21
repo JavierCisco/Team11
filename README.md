@@ -22,7 +22,7 @@ Team 11's work for Software Engineering project.
 - pip3 install psycopg2-binary **use this if there are issues when compiling the extension**
 
 # Then open a terminal and type python3 then hit enter. Then use the following commands to verify the installation.
--import psycopg2
+- import psycopg2
 
 # If there are no errors then the installation was successful.
 
