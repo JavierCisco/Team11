@@ -33,6 +33,7 @@ def insert_player(id, name):
 	try:
 		cursor.execute('''INSERT INTO players VALUES(%s, %s);''', (id, name))
 		conn.commit()
+		print(f"Player {name} with ID {id} inserted into the database.")
 	except Exception as error:
 		print(f'Error inserting a player: {error}')
 
@@ -42,6 +43,19 @@ def remove_player(playerID):
 		conn.commit()
 	except Exception as error:
 		print(f'Error removing a player: {error}')
+
+def query_codename(player_id):
+	try:
+		cursor.execute('SELECT codename FROM players WHERE id = %;', (player_id,))
+		result = cursor.fetchone()
+		if result:
+			return result[0]
+		else:
+			print('No existing codename found')
+			return None
+	except Exception as error:
+		print(f'Error querying the database: {error}')
+		return None
 
 # cursor would close before being accessed in main, this fixed the bug, i call this in main function 'end_game()'
 #	so it will for sure execute, as long as the game closes, so will this block execute

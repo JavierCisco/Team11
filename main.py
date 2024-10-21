@@ -180,11 +180,29 @@ def clear_game():
                 text_box.text = ""
 
 def add_player():
-    player_id = random.randint(1000, 9999)  # This would be dynamically generated or provided
-    send_equipment_code(player_id)
-    name = input('Name of player?:')
-    insert_player(player_id, name)
-    print(f"Added:\nName: {name}\nID: {player_id}")
+    player_id = input("Enter player ID number:")
+
+    # Search databse for existing codename
+    code_name = query_codename(player_id)
+
+    # If no codename found, enter a new codename
+    if not code_name:
+        print("Code name not found for player ID:", player_id)
+        code_name = input("Enter new code name for this player:")
+        insert_player(player_id, code_name)
+        print(f"Player added:\nName: {code_name}\nID: {player_id}")
+    else:
+        print(f"Player found:\nName: {code_name}\nID: {player_id}")
+
+    while True:
+        try:
+            equipment_id = int(input("Enter equipment ID (must be an integer): "))
+            break
+        except ValueError:
+            print("Invalid input. Please enter an integer.")        
+    # Broadcast equipment code
+    send_equipment_code(equipment_id)
+    
 
 def delete_player():
     playID = input('ID of player to remove?:')
@@ -293,6 +311,7 @@ while running:
             print("Countdown ended")
             countdown_active = False
             play_action = True
+
     #########################################################################
     elif action:
         entry_screen_active = False
@@ -300,6 +319,7 @@ while running:
         play_action = True
         pygame.display.update()       
     ##########################################################################   
+    
     elif entry_screen_active:
         # draw buttons screen
         screen.fill((255, 255, 255))
@@ -327,6 +347,12 @@ while running:
 
     # game action screen
     elif play_action:
+
+            # display a screen with half green and half red
+            screen.fill((0, 255, 0), pygame.Rect(0, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT)) 
+            screen.fill((255, 0, 0), pygame.Rect(SCREEN_WIDTH // 2, 0, SCREEN_WIDTH // 2, SCREEN_HEIGHT))
+            pygame.display.update()
+
         #temporary action log, team scores, and time
             action_log = ["Player A hit Player B", "Player C hit Player D", "Player E hit the base"]
             red_team_score = 5000
