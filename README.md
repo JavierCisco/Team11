@@ -34,7 +34,6 @@ Team 11's work for Software Engineering project.
 - F3: Starts Game and Countdown timer. It also allows user to move onto game action screen.
 - Buttons are on screen, and the keys to do certain actions are also described on the screen.
 - please click back to the game screen to keep interacting with the game
-- Use 'Escape' key to quit program
 
 Github Names and Real Names:
 - JavierCisco = Francisco Hernandez
