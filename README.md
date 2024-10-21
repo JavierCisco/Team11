@@ -33,7 +33,8 @@ Team 11's work for Software Engineering project.
 # Once game has started: 
 - F3: Starts Game and Countdown timer. It also allows user to move onto game action screen.
 - Buttons are on screen, and the keys to do certain actions are also described on the screen.
-- please click back to the game screen to keep interacting with the game
+- Please click back to the game screen to keep interacting with the game.
+- On the entry screen, there are two sets of tables, one for each team. For each side, the left box is where the user will enter the player id, and the right box is where they will enter the equipment code.
 
 Github Names and Real Names:
 - JavierCisco = Francisco Hernandez
