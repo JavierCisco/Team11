@@ -3,8 +3,8 @@ import sys
 import socket
 import random
 import subprocess
+import threading
 from database import *
-# from action_display import *  # Import the action display function
 
 # initializing pygame
 pygame.init()
@@ -44,14 +44,54 @@ start_server()
 start_client()
 
 # UDP setup
-UDP_IP = "127.0.0.1"  # replace with your target IP
-UDP_PORT = 7500       # the port to broadcast equipment codes
+UDP_IP = "127.0.0.1"  
+UDP_PORT = 7500       
 udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 def send_equipment_code(code):
     message = str(code).encode('utf-8')
     udp_socket.sendto(message, (UDP_IP, UDP_PORT))
     print(f"Sent equipment code: {code}")
+
+def send_start_signal():
+    udp_socket.sendto(b"202", (UDP_IP, UDP_PORT))
+    print("Start signal sent to traffic generator")
+
+def send_stop_signal():
+    udp_socket.sendto(b"221", (UDP_IP, UDP_PORT))
+    print("Stop signal sent to traffic generator")
+
+def udp_listener():
+    buffer_size = 1024
+    udp_port = 7501
+    listener_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+    listener_socket.bind(("127.0.0.1", udp_port))
+    print("Game is listening for traffic...")
+
+    while True:
+        message, address = listener_socket.recvfrom(buffer_size)
+        message = message.decode('utf-8')
+        print(f"Received traffic: {message}")
+        process_traffic(message)
+def process_traffic(message):
+    # global red_team, green_team, action_log
+
+    try:
+        attacker_id, target_id = message.split(":")
+    except ValueError:
+        print(f"Invalid message: {message}")
+        return
+
+    # Find the attacker and target in teams
+    for team in [red_team, green_team]:
+        for i, player in enumerate(team):
+            if player[0] == attacker_id:
+                team[i] = (player[0], player[1] + 100)  # Update score
+                action_log.append(f"{player[0]} hit {target_id}")
+                if len(action_log) > 5:
+                    action_log.pop(0)
+                print(f"{player[0]} hit {target_id}, score updated!")
+
 
 # TextBox class for table cells
 class TextBox:
@@ -105,6 +145,7 @@ selected_row = None
 selected_col = None
 red_team = []
 green_team = []
+action_log = []
 
 # Table 1 (left side - columns 1 and 2)
 for row in range(10):
@@ -201,7 +242,6 @@ def handle_box_click(row, col):
 def prompt_codename(player_id):
     input_active = True
     codename_textbox = TextBox(300,200,400,40)
-   
 
     while input_active:
         for event in pygame.event.get():
@@ -290,6 +330,7 @@ def end_game():
     bye_data()	
     pygame.quit()
     udp_socket.close()
+    send_stop_signal()
     sys.exit()
 
 def draw_action_screen():
@@ -328,9 +369,9 @@ def draw_action_screen():
     screen.blit(action_header, (50, 200))
 
     # Draw the action log entries
-    # for i, action in enumerate(action_log[-5:]):  # Show the last 5 actions
-    #     action_text = font_text.render(action, True, WHITE)
-    #     screen.blit(action_text, (50, 240 + i * 30))
+    for i, action in enumerate(action_log[-5:]):  # Show the last 5 actions
+        action_text = font_text.render(action, True, WHITE)
+        screen.blit(action_text, (50, 240 + i * 30))
 
     # Draw the remaining time
     # time_text = font_text.render(f"Time Remaining: {time_remaining}", True, WHITE)
@@ -380,6 +421,9 @@ entry_screen_active = True
 play_action = True
 
 while running:
+    listener_thread = threading.Thread(target=udp_listener, daemon=True)
+    listener_thread.start()
+    send_start_signal()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -483,8 +527,6 @@ while running:
     # game action screen
     elif play_action:
             draw_action_screen()
-            print(f"Red team: {red_team}")
-            print(f"Green team: {green_team}")
 
         #temporary action log, team scores, and time
             action_log = ["Player A hit Player B", "Player C hit Player D", "Player E hit the base"]
@@ -494,6 +536,4 @@ while running:
             # List of players on each team
             red_team_players = ["Player A", "Player B", "Player C"]
             green_team_players = ["Player D", "Player E", "Player F"]
-
-            # display_action_screen(screen, action_log, red_team_score, green_team_score, game_time_remaining, red_team_players, green_team_players)
 end_game
