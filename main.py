@@ -404,13 +404,25 @@ while running:
         pygame.draw.rect(screen, BLACK, pygame.Rect(0, 550, 800, 40))
         text = font.render("<Del> to Delete Player, <i> to Insert Player or Edit Codename", True, WHITE)
         screen.blit(text, (50,560))
-        ###################################################
+        ##################################################
         
         # Draw the tables
         for table in tables:
             for row in table:
                 for text_box in row:
                     text_box.draw(screen)
+                    
+        #draw columu labels (left)
+        label_font = pygame.font.Font(None, 24)
+        name_label_left = label_font.render("Name", True, BLACK)
+        id_label_left = label_font.render("ID", True, BLACK)
+        screen.blit(name_label_left, (100, 30))
+        screen.blit(id_label_left, (200, 30)) 
+        # draw column labels (right)
+        name_label_right = label_font.render("Name", True, BLACK)
+        id_label_right = label_font.render("ID", True, BLACK)
+        screen.blit(name_label_right, (450, 30)) 
+        screen.blit(id_label_right, (550, 30))
                     
         for button in buttons:
             button.draw()
