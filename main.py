@@ -228,7 +228,7 @@ def prompt_codename(player_id):
         codename_textbox.draw(screen)
         pygame.display.update()
 
-
+def add_player():
     global active_table_id
     if selected_row is None or selected_col is None:
         print("No row/column selected")
@@ -327,9 +327,9 @@ def draw_action_screen():
     screen.blit(action_header, (50, 200))
 
     # Draw the action log entries
-    for i, action in enumerate(action_log[-5:]):  # Show the last 5 actions
-        action_text = font_text.render(action, True, WHITE)
-        screen.blit(action_text, (50, 240 + i * 30))
+    # for i, action in enumerate(action_log[-5:]):  # Show the last 5 actions
+    #     action_text = font_text.render(action, True, WHITE)
+    #     screen.blit(action_text, (50, 240 + i * 30))
 
     # Draw the remaining time
     # time_text = font_text.render(f"Time Remaining: {time_remaining}", True, WHITE)
