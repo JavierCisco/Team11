@@ -414,13 +414,13 @@ while running:
                     
         #draw columu labels (left)
         label_font = pygame.font.Font(None, 24)
-        name_label_left = label_font.render("Name", True, BLACK)
-        id_label_left = label_font.render("ID", True, BLACK)
+        name_label_left = label_font.render("ID", True, BLACK)
+        id_label_left = label_font.render("Name", True, BLACK)
         screen.blit(name_label_left, (100, 30))
         screen.blit(id_label_left, (200, 30)) 
         # draw column labels (right)
-        name_label_right = label_font.render("Name", True, BLACK)
-        id_label_right = label_font.render("ID", True, BLACK)
+        name_label_right = label_font.render("ID", True, BLACK)
+        id_label_right = label_font.render("Name", True, BLACK)
         screen.blit(name_label_right, (450, 30)) 
         screen.blit(id_label_right, (550, 30))
                     
