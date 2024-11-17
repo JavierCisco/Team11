@@ -4,7 +4,7 @@ import socket
 import random
 import subprocess
 from database import *
-from action_display import *  # Import the action display function
+# from action_display import *  # Import the action display function
 
 # initializing pygame
 pygame.init()
