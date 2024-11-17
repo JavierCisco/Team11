@@ -4,7 +4,7 @@ import socket
 import random
 import subprocess
 from database import *
-from action_display import *  # Import the action display function
+# from action_display import *  # Import the action display function
 
 # initializing pygame
 pygame.init()
@@ -272,6 +272,7 @@ def add_player():
         send_equipment_code(equipment_code)
     else:
         print("No codename entered; player was not added.")
+    add_player_to_team(team, code_name, score=0)
 
 def add_player_to_team(team, player_name, score=0):
     if team == "Red":
@@ -494,7 +495,5 @@ while running:
             red_team_players = ["Player A", "Player B", "Player C"]
             green_team_players = ["Player D", "Player E", "Player F"]
 
-            display_action_screen(screen, action_log, red_team_score, green_team_score, game_time_remaining, red_team_players, green_team_players)
-
-
+            # display_action_screen(screen, action_log, red_team_score, green_team_score, game_time_remaining, red_team_players, green_team_players)
 end_game
