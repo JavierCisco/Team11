@@ -300,7 +300,7 @@ buttons = [
     Button("F2\nGame\nParameters", button_margin + 1 * (button_width + button_margin), y_position, button_width, button_height, game_parameters),
     Button("F3\nStart Game", button_margin + 2 * (button_width + button_margin), y_position, button_width, button_height, start_game),
     Button("F5\nAction Screen", button_margin + 3 * (button_width + button_margin), y_position, button_width, button_height, pre_entered_games),
-    Button("F7\nAdd\nPlayer", button_margin + 4 * (button_width + button_margin), y_position, button_width, button_height),
+    Button("F7\nAdd\nPlayer", button_margin + 4 * (button_width + button_margin), y_position, button_width, button_height, add_player),
     Button("F8\nView Game", button_margin + 5 * (button_width + button_margin), y_position, button_width, button_height, view_game),
     Button("F10\nFlick Sync", button_margin + 6 * (button_width + button_margin), y_position, button_width, button_height, flick_sync),
     Button("F12\nClear Game", button_margin + 7 * (button_width + button_margin), y_position, button_width, button_height, clear_game),
@@ -316,7 +316,7 @@ key_to_action = {
     pygame.K_F8: view_game,
     pygame.K_F10: flick_sync,
     pygame.K_F12: clear_game,
-    pygame.K_BACKSPACE: delete_player,
+    #pygame.K_BACKSPACE: delete_player,
     pygame.K_ESCAPE: end_game,
     pygame.K_F6: test_func
 }
