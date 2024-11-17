@@ -10,13 +10,16 @@ from action_display import *  # Import the action display function
 pygame.init()
 pygame.mixer.init()
 
+
 # screen dimensions
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
 
+
 # set up the screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Splash Screen")
+
 
 # load and display the splash image
 try:
@@ -262,14 +265,7 @@ def add_player():
         else:
             print("No codename entered")
     else:
-        print(f"Player found:\nName: {code_name}\nID: {player_id}")
-
-    # while True:
-    #     try:
-    #         equipment_id = int(input("Enter equipment ID (must be an integer): "))
-    #         break
-    #     except ValueError:
-    #         print("Invalid input. Please enter an integer.")   
+        print(f"Player found:\nName: {code_name}\nID: {player_id}")  
     
     # Broadcast equipment code
     send_equipment_code(equipment_code)
@@ -430,19 +426,44 @@ while running:
 
     # game action screen
     elif play_action:
+            pygame.display.set_caption("Game Action Screen")
+
+            # Colors
+            BLACK = (0, 0, 0)
+            WHITE = (255, 255, 255)
+            RED = (255, 0, 0)
+            GREEN = (0, 255, 0)
+            BLUE = (0, 0, 255)
+            YELLOW = (255, 255, 0)
+
+            # Fonts
+            font_title = pygame.font.Font(None, 48)
+            font_text = pygame.font.Font(None, 36)
+
+            # Sample data
+            red_team_score = 6025
+            green_team_score = 5000
+            action_log = [
+                "Scooby Doo hit Opus",
+                "Scooby Doo hit Opus",
+                "Scooby Doo hit Opus",
+                "Opus hit Scooby Doo",
+                "Opus hit the Base",
+                "Opus hit Scooby Doo",
+            ]
+            time_remaining = "05:57"
 
 
-        #temporary action log, team scores, and time
-            action_log = ["Player A hit Player B", "Player C hit Player D", "Player E hit the base"]
-            red_team_score = 5000
-            green_team_score = 4500
-            game_time_remaining = 60
-            # List of players on each team
-            red_team_players = ["Player A", "Player B", "Player C"]
-            green_team_players = ["Player D", "Player E", "Player F"]
+        # #temporary action log, team scores, and time
+        #     action_log = ["Player A hit Player B", "Player C hit Player D", "Player E hit the base"]
+        #     red_team_score = 5000
+        #     green_team_score = 4500
+        #     game_time_remaining = 60
+        #     # List of players on each team
+        #     red_team_players = ["Player A", "Player B", "Player C"]
+        #     green_team_players = ["Player D", "Player E", "Player F"]
 
-            display_action_screen(screen, action_log, red_team_score, green_team_score, game_time_remaining, red_team_players, green_team_players)
+        #     display_action_screen(screen, action_log, red_team_score, green_team_score, game_time_remaining, red_team_players, green_team_players)
 
 
 end_game
-
