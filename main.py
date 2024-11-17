@@ -377,6 +377,7 @@ while running:
         if countdown_left <= 0:
             print("Countdown ended")
             countdown_active = False
+            entry_screen_active = False
             play_action = True
 
     #########################################################################
@@ -426,6 +427,7 @@ while running:
 
     # game action screen
     elif play_action:
+            entry_screen_active = False
             pygame.display.set_caption("Game Action Screen")
 
             # Clear the screen
