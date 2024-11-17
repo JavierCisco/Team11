@@ -482,16 +482,4 @@ while running:
     # game action screen
     elif play_action:
             draw_action_screen()
-            print(f"Red team: {red_team}")
-            print(f"Green team: {green_team}")
-
-        #temporary action log, team scores, and time
-            action_log = ["Player A hit Player B", "Player C hit Player D", "Player E hit the base"]
-            red_team_score = 5000
-            green_team_score = 4500
-            game_time_remaining = 60
-            # List of players on each team
-            red_team_players = ["Player A", "Player B", "Player C"]
-            green_team_players = ["Player D", "Player E", "Player F"]
-
 end_game
