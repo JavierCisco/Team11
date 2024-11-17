@@ -4,22 +4,19 @@ import socket
 import random
 import subprocess
 from database import *
-# from action_display import *  # Import the action display function
+from action_display import *  # Import the action display function
 
 # initializing pygame
 pygame.init()
 pygame.mixer.init()
 
-
 # screen dimensions
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
 
-
 # set up the screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Splash Screen")
-
 
 # load and display the splash image
 try:
@@ -106,6 +103,8 @@ cell_width = 100
 cell_height = 40
 selected_row = None
 selected_col = None
+red_team = []
+green_team = []
 
 # Table 1 (left side - columns 1 and 2)
 for row in range(10):
@@ -230,45 +229,55 @@ def prompt_codename(player_id):
         pygame.display.update()
 
 
-def add_player():
     global active_table_id
     if selected_row is None or selected_col is None:
         print("No row/column selected")
         return
 
+    # Determine which table (0: left side, 1: right side)
     if active_table_id == 0:
         player_id_text = table1[selected_row][0].text
-        print(f"playerID is {player_id_text}")
         equipment_code_text = table1[selected_row][1].text
+        team = "Red"
     else:
         player_id_text = table2[selected_row][0].text
-        print(f"playerIDTable2 is {player_id_text}")
         equipment_code_text = table2[selected_row][1].text
+        team = "Green"
 
-    # Ensure both fields are not empty before converting
+    # Ensure both fields are filled before converting to the appropriate types
     if not player_id_text or not equipment_code_text:
         print("Player ID or Equipment Code cannot be empty.")
         return
-    player_id = player_id_text  # Keep as string
-    equipment_code = equipment_code_text
 
-    # Search databse for existing codename
+    player_id = player_id_text.strip()  # Keep as a string for varchar storage
+    equipment_code = equipment_code_text.strip()
+
+    # Search for an existing codename in the database
     code_name = query_codename(player_id)
 
-    # If no codename found, enter a new codename
+    # If no codename is found, prompt for a new one
     if not code_name:
-        print("Code name not found for player ID:", player_id)
-        code_name = prompt_codename(player_id)
-        if code_name:
-            insert_player(player_id, code_name)
-            print(f"Player added:\nName: {code_name}\nID: {player_id}")
-        else:
-            print("No codename entered")
+        print(f"Codename not found for Player ID: {player_id}")
+        prompt_codename(player_id)  # This will insert the codename into the database if provided
+
+    # Confirm that a codename exists after prompting
+    code_name = query_codename(player_id)
+    if code_name:
+        # Insert the player into the database (for Table 2 as well)
+        insert_player(player_id, code_name)
+
+        print(f"Player added:\nTeam: {team}\nName: {code_name}\nID: {player_id}\nEquipment Code: {equipment_code}")
+
+        # Broadcast the equipment code via UDP
+        send_equipment_code(equipment_code)
     else:
-        print(f"Player found:\nName: {code_name}\nID: {player_id}")  
-    
-    # Broadcast equipment code
-    send_equipment_code(equipment_code)
+        print("No codename entered; player was not added.")
+
+def add_player_to_team(team, player_name, score=0):
+    if team == "Red":
+        red_team.append((player_name, score))
+    elif team == "Green":
+        green_team.append((player_name, score))
     
 
 def delete_player():
@@ -281,6 +290,52 @@ def end_game():
     pygame.quit()
     udp_socket.close()
     sys.exit()
+
+def draw_action_screen():
+    screen.fill((0, 0, 0))  # Black background
+
+    # Fonts
+    font_title = pygame.font.Font(None, 48)
+    font_text = pygame.font.Font(None, 36)
+
+    # Colors
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
+    BLUE = (0, 0, 255)
+    WHITE = (255, 255, 255)
+
+    # Draw the current scores header
+    current_scores_header = font_title.render("Current Scores", True, BLUE)
+    screen.blit(current_scores_header, (750, 20))
+
+    # Draw Red Team scores
+    red_team_header = font_text.render("Red Team", True, RED)
+    screen.blit(red_team_header, (50, 20))
+    for i, (player, score) in enumerate(red_team):
+        player_text = font_text.render(f"{player}: {score}", True, WHITE)
+        screen.blit(player_text, (50, 60 + i * 30))
+
+    # Draw Green Team scores
+    green_team_header = font_text.render("Green Team", True, GREEN)
+    screen.blit(green_team_header, (500, 20))
+    for i, (player, score) in enumerate(green_team):
+        player_text = font_text.render(f"{player}: {score}", True, WHITE)
+        screen.blit(player_text, (500, 60 + i * 30))
+
+    # Draw the action log header
+    action_header = font_title.render("Current Game Action", True, BLUE)
+    screen.blit(action_header, (50, 200))
+
+    # Draw the action log entries
+    for i, action in enumerate(action_log[-5:]):  # Show the last 5 actions
+        action_text = font_text.render(action, True, WHITE)
+        screen.blit(action_text, (50, 240 + i * 30))
+
+    # Draw the remaining time
+    # time_text = font_text.render(f"Time Remaining: {time_remaining}", True, WHITE)
+    # screen.blit(time_text, (50, 500))
+
+    pygame.display.flip()
 
 def test_func():
 # usable with 't' for now just used to view table players
@@ -377,7 +432,6 @@ while running:
         if countdown_left <= 0:
             print("Countdown ended")
             countdown_active = False
-            entry_screen_active = False
             play_action = True
 
     #########################################################################
@@ -411,13 +465,13 @@ while running:
                     
         #draw columu labels (left)
         label_font = pygame.font.Font(None, 24)
-        name_label_left = label_font.render("Name", True, BLACK)
-        id_label_left = label_font.render("ID", True, BLACK)
+        name_label_left = label_font.render("ID", True, BLACK)
+        id_label_left = label_font.render("Name", True, BLACK)
         screen.blit(name_label_left, (100, 30))
         screen.blit(id_label_left, (200, 30)) 
         # draw column labels (right)
-        name_label_right = label_font.render("Name", True, BLACK)
-        id_label_right = label_font.render("ID", True, BLACK)
+        name_label_right = label_font.render("ID", True, BLACK)
+        id_label_right = label_font.render("Name", True, BLACK)
         screen.blit(name_label_right, (450, 30)) 
         screen.blit(id_label_right, (550, 30))
                     
@@ -427,58 +481,20 @@ while running:
 
     # game action screen
     elif play_action:
-            entry_screen_active = False
-            pygame.display.set_caption("Game Action Screen")
+            draw_action_screen()
+            print(f"Red team: {red_team}")
+            print(f"Green team: {green_team}")
 
-            # Clear the screen
-            screen.fill(BLACK)
+        #temporary action log, team scores, and time
+            action_log = ["Player A hit Player B", "Player C hit Player D", "Player E hit the base"]
+            red_team_score = 5000
+            green_team_score = 4500
+            game_time_remaining = 60
+            # List of players on each team
+            red_team_players = ["Player A", "Player B", "Player C"]
+            green_team_players = ["Player D", "Player E", "Player F"]
 
-            # Colors
-            RED = (255, 0, 0)
-            GREEN = (0, 255, 0)
-            BLUE = (0, 0, 255)
-            YELLOW = (255, 255, 0)
-            WHITE = (255, 255, 255)
+            display_action_screen(screen, action_log, red_team_score, green_team_score, game_time_remaining, red_team_players, green_team_players)
 
-            # Fonts
-            font_title = pygame.font.Font(None, 48)
-            font_text = pygame.font.Font(None, 36)
-
-            # Sample data
-            red_team_score = 6025
-            green_team_score = 5000
-            action_log = [
-                "Scooby Doo hit Opus",
-                "Scooby Doo hit Opus",
-                "Scooby Doo hit Opus",
-                "Opus hit Scooby Doo",
-                "Opus hit the Base",
-                "Opus hit Scooby Doo",
-            ]
-            time_remaining = "05:57"
-
-            # Draw current scores
-            current_scores_header = font_title.render("Current Scores", True, BLUE)
-            screen.blit(current_scores_header, (750, 20))
-
-            red_score_text = font_text.render(f"Red Team: {red_team_score}", True, RED)
-            green_score_text = font_text.render(f"Green Team: {green_team_score}", True, GREEN)
-            screen.blit(red_score_text, (750, 70))
-            screen.blit(green_score_text, (750, 110))
-
-            # Draw action log
-            action_header = font_title.render("Current Game Action", True, YELLOW)
-            screen.blit(action_header, (50, 20))
-
-            for i, action in enumerate(action_log):
-                action_text = font_text.render(action, True, WHITE)
-                screen.blit(action_text, (50, 70 + i * 30))
-
-            # Draw remaining time
-            time_text = font_text.render(f"Time Remaining: {time_remaining}", True, WHITE)
-            screen.blit(time_text, (50, 500))
-
-            # Update the screen
-            pygame.display.update()
 
 end_game
