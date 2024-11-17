@@ -428,13 +428,15 @@ while running:
     elif play_action:
             pygame.display.set_caption("Game Action Screen")
 
+            # Clear the screen
+            screen.fill(BLACK)
+
             # Colors
-            BLACK = (0, 0, 0)
-            WHITE = (255, 255, 255)
             RED = (255, 0, 0)
             GREEN = (0, 255, 0)
             BLUE = (0, 0, 255)
             YELLOW = (255, 255, 0)
+            WHITE = (255, 255, 255)
 
             # Fonts
             font_title = pygame.font.Font(None, 48)
@@ -453,17 +455,28 @@ while running:
             ]
             time_remaining = "05:57"
 
+            # Draw current scores
+            current_scores_header = font_title.render("Current Scores", True, BLUE)
+            screen.blit(current_scores_header, (750, 20))
 
-        # #temporary action log, team scores, and time
-        #     action_log = ["Player A hit Player B", "Player C hit Player D", "Player E hit the base"]
-        #     red_team_score = 5000
-        #     green_team_score = 4500
-        #     game_time_remaining = 60
-        #     # List of players on each team
-        #     red_team_players = ["Player A", "Player B", "Player C"]
-        #     green_team_players = ["Player D", "Player E", "Player F"]
+            red_score_text = font_text.render(f"Red Team: {red_team_score}", True, RED)
+            green_score_text = font_text.render(f"Green Team: {green_team_score}", True, GREEN)
+            screen.blit(red_score_text, (750, 70))
+            screen.blit(green_score_text, (750, 110))
 
-        #     display_action_screen(screen, action_log, red_team_score, green_team_score, game_time_remaining, red_team_players, green_team_players)
+            # Draw action log
+            action_header = font_title.render("Current Game Action", True, YELLOW)
+            screen.blit(action_header, (50, 20))
 
+            for i, action in enumerate(action_log):
+                action_text = font_text.render(action, True, WHITE)
+                screen.blit(action_text, (50, 70 + i * 30))
+
+            # Draw remaining time
+            time_text = font_text.render(f"Time Remaining: {time_remaining}", True, WHITE)
+            screen.blit(time_text, (50, 500))
+
+            # Update the screen
+            pygame.display.update()
 
 end_game
