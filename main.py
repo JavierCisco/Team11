@@ -4,7 +4,6 @@ import socket
 import random
 import subprocess
 from database import *
-from action_display import *  # Import the action display function
 
 # initializing pygame
 pygame.init()
@@ -103,6 +102,8 @@ cell_width = 100
 cell_height = 40
 selected_row = None
 selected_col = None
+red_team = []
+green_team = []
 
 # Table 1 (left side - columns 1 and 2)
 for row in range(10):
@@ -270,6 +271,13 @@ def add_player():
         send_equipment_code(equipment_code)
     else:
         print("No codename entered; player was not added.")
+    add_player_to_team(team, code_name, score=0)
+
+def add_player_to_team(team, player_name, score=0):
+    if team == "Red":
+        red_team.append((player_name, score))
+    elif team == "Green":
+        green_team.append((player_name, score))
     
 
 def delete_player():
@@ -282,6 +290,52 @@ def end_game():
     pygame.quit()
     udp_socket.close()
     sys.exit()
+
+def draw_action_screen():
+    screen.fill((0, 0, 0))  # Black background
+
+    # Fonts
+    font_title = pygame.font.Font(None, 48)
+    font_text = pygame.font.Font(None, 36)
+
+    # Colors
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
+    BLUE = (0, 0, 255)
+    WHITE = (255, 255, 255)
+
+    # Draw the current scores header
+    current_scores_header = font_title.render("Current Scores", True, BLUE)
+    screen.blit(current_scores_header, (750, 20))
+
+    # Draw Red Team scores
+    red_team_header = font_text.render("Red Team", True, RED)
+    screen.blit(red_team_header, (50, 20))
+    for i, (player, score) in enumerate(red_team):
+        player_text = font_text.render(f"{player}: {score}", True, WHITE)
+        screen.blit(player_text, (50, 60 + i * 30))
+
+    # Draw Green Team scores
+    green_team_header = font_text.render("Green Team", True, GREEN)
+    screen.blit(green_team_header, (500, 20))
+    for i, (player, score) in enumerate(green_team):
+        player_text = font_text.render(f"{player}: {score}", True, WHITE)
+        screen.blit(player_text, (500, 60 + i * 30))
+
+    # Draw the action log header
+    action_header = font_title.render("Current Game Action", True, BLUE)
+    screen.blit(action_header, (50, 200))
+
+    # Draw the action log entries
+    # for i, action in enumerate(action_log[-5:]):  # Show the last 5 actions
+    #     action_text = font_text.render(action, True, WHITE)
+    #     screen.blit(action_text, (50, 240 + i * 30))
+
+    # Draw the remaining time
+    # time_text = font_text.render(f"Time Remaining: {time_remaining}", True, WHITE)
+    # screen.blit(time_text, (50, 500))
+
+    pygame.display.flip()
 
 def test_func():
 # usable with 't' for now just used to view table players
@@ -427,7 +481,9 @@ while running:
 
     # game action screen
     elif play_action:
-
+            draw_action_screen()
+            print(f"Red team: {red_team}")
+            print(f"Green team: {green_team}")
 
         #temporary action log, team scores, and time
             action_log = ["Player A hit Player B", "Player C hit Player D", "Player E hit the base"]
@@ -438,8 +494,4 @@ while running:
             red_team_players = ["Player A", "Player B", "Player C"]
             green_team_players = ["Player D", "Player E", "Player F"]
 
-            display_action_screen(screen, action_log, red_team_score, green_team_score, game_time_remaining, red_team_players, green_team_players)
-
-
 end_game
-
