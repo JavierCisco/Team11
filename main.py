@@ -227,52 +227,49 @@ def prompt_codename(player_id):
         pygame.display.update()
 
 
-def add_player():
     global active_table_id
     if selected_row is None or selected_col is None:
         print("No row/column selected")
         return
 
+    # Determine which table (0: left side, 1: right side)
     if active_table_id == 0:
         player_id_text = table1[selected_row][0].text
-        print(f"playerID is {player_id_text}")
         equipment_code_text = table1[selected_row][1].text
+        team = "Red"
     else:
         player_id_text = table2[selected_row][0].text
-        print(f"playerIDTable2 is {player_id_text}")
         equipment_code_text = table2[selected_row][1].text
+        team = "Green"
 
-    # Ensure both fields are not empty before converting
+    # Ensure both fields are filled before converting to the appropriate types
     if not player_id_text or not equipment_code_text:
         print("Player ID or Equipment Code cannot be empty.")
         return
-    player_id = player_id_text  # Keep as string
-    equipment_code = equipment_code_text
 
-    # Search databse for existing codename
+    player_id = player_id_text.strip()  # Keep as a string for varchar storage
+    equipment_code = equipment_code_text.strip()
+
+    # Search for an existing codename in the database
     code_name = query_codename(player_id)
 
-    # If no codename found, enter a new codename
+    # If no codename is found, prompt for a new one
     if not code_name:
-        print("Code name not found for player ID:", player_id)
-        code_name = prompt_codename(player_id)
-        if code_name:
-            insert_player(player_id, code_name)
-            print(f"Player added:\nName: {code_name}\nID: {player_id}")
-        else:
-            print("No codename entered")
-    else:
-        print(f"Player found:\nName: {code_name}\nID: {player_id}")
+        print(f"Codename not found for Player ID: {player_id}")
+        prompt_codename(player_id)  # This will insert the codename into the database if provided
 
-    # while True:
-    #     try:
-    #         equipment_id = int(input("Enter equipment ID (must be an integer): "))
-    #         break
-    #     except ValueError:
-    #         print("Invalid input. Please enter an integer.")   
-    
-    # Broadcast equipment code
-    send_equipment_code(equipment_code)
+    # Confirm that a codename exists after prompting
+    code_name = query_codename(player_id)
+    if code_name:
+        # Insert the player into the database (for Table 2 as well)
+        insert_player(player_id, code_name)
+
+        print(f"Player added:\nTeam: {team}\nName: {code_name}\nID: {player_id}\nEquipment Code: {equipment_code}")
+
+        # Broadcast the equipment code via UDP
+        send_equipment_code(equipment_code)
+    else:
+        print("No codename entered; player was not added.")
     
 
 def delete_player():
