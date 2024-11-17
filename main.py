@@ -226,7 +226,7 @@ def prompt_codename(player_id):
         codename_textbox.draw(screen)
         pygame.display.update()
 
-
+def add_player():
     global active_table_id
     if selected_row is None or selected_col is None:
         print("No row/column selected")
