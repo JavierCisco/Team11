@@ -181,8 +181,6 @@ def start_traffic_generator():
 
 def start_game():
     print("Start Game clicked!")
-    start_traffic_generator()
-    send_start_signal()
     global countdown_active, start_ticks
     countdown_active = True  # Start the countdown
     start_ticks = pygame.time.get_ticks()  # Get the current time in milliseconds
@@ -461,6 +459,8 @@ play_action = True
 
 while running:
     for event in pygame.event.get():
+        start_traffic_generator()
+        send_start_signal()
         if event.type == pygame.QUIT:
             running = False
         elif event.type == show_main_screen_event and on_splash_screen:
