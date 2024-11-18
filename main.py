@@ -290,7 +290,7 @@ def end_game():
 
 game_start_time = pygame.time.get_ticks()
 game_time = pygame.time.get_ticks()
-total_game_time = 6 * 60
+total_game_time = 6 * 60 + 30 # add 30 to make up for 30 second countdown
 
 def increment_score(player_name, points):
     print('points added')
