@@ -42,15 +42,19 @@ def start_client():
 start_server()
 start_client()
 
-# UDP setup
-UDP_IP = "127.0.0.1"  
-UDP_PORT = 7500       
-udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-def send_equipment_code(code):
-    message = str(code).encode('utf-8')
-    udp_socket.sendto(message, (UDP_IP, UDP_PORT))
-    print(f"Sent equipment code: {code}")
+# UDP setup
+# UDP_IP = "127.0.0.1"  
+# UDP_PORT = 7500       
+udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+def send_message_to_server(message):
+    udp_socket.sendto(message.encode('utf-8'), ("127.0.0.1", 7500))
+    print(f"Sent message to server: {message}")
+
+# def send_equipment_code(code):
+#     message = str(code).encode('utf-8')
+#     udp_socket.sendto(message, (UDP_IP, UDP_PORT))
+#     print(f"Sent equipment code: {code}")
 
 # TextBox class for table cells
 class TextBox:
@@ -268,7 +272,7 @@ def add_player():
         print(f"Player added:\nTeam: {team}\nName: {code_name}\nID: {player_id}\nEquipment Code: {equipment_code}")
 
         # Broadcast the equipment code via UDP
-        send_equipment_code(equipment_code)
+        # send_equipment_code(equipment_code)
     else:
         print("No codename entered; player was not added.")
     add_player_to_team(team, code_name, score=0)
@@ -288,7 +292,8 @@ def delete_player():
 def end_game():
     bye_data()	
     pygame.quit()
-    udp_socket.close()
+    # udp_socket.close()
+    send_message_to_server("STOP")
     sys.exit()
 
 def draw_action_screen():
@@ -380,6 +385,7 @@ play_action = True
 
 while running:
     for event in pygame.event.get():
+        send_message_to_server("START")
         if event.type == pygame.QUIT:
             running = False
         elif event.type == show_main_screen_event and on_splash_screen:
