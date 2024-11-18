@@ -158,11 +158,15 @@ countdown_active = False
 countdown_time = 30  # 30 seconds countdown
 start_ticks = 0  # tracks when countdown started
 
+start_count = False
+
 def start_game():
     print("Start Game clicked!")
-    global countdown_active, start_ticks
-    countdown_active = True  # Start the countdown
-    start_ticks = pygame.time.get_ticks()  # Get the current time in milliseconds
+    global start_count
+    init_timer(0.5)
+    start_count = True
+    #start_ticks = pygame.time.get_ticks()  # Get the current time in milliseconds
+    
     print("Countdown started!")
 
 def pre_entered_games():
@@ -170,7 +174,7 @@ def pre_entered_games():
     #########################
     global action
     action = not action
-    init_timer()
+    init_timer(6)
     print("Action Display")
     #########################
 
@@ -290,7 +294,7 @@ def end_game():
 
 game_start_time = pygame.time.get_ticks()
 game_time = pygame.time.get_ticks()
-total_game_time = 6 * 60
+total_game_time = 0
 
 def increment_score(player_name, points):
     print('points added')
@@ -334,10 +338,13 @@ def draw_action_screen():
     screen.blit(action_header, (50, 200))
 
     # Timer logic (Update this part)
-def init_timer():
-	global game_start_time
+play_action = True
+def init_timer(minutes):
+	global game_start_time, total_game_time
 	game_start_time = pygame.time.get_ticks()
-def game_timer():
+	total_game_time = minutes * 60
+	
+def game_timer(type: str):
     elapsed_time = (pygame.time.get_ticks() - game_start_time) // 1000  # Elapsed time in seconds
     remaining_time = total_game_time - elapsed_time
 
@@ -348,18 +355,31 @@ def game_timer():
     else:
         timer_text = "00:00"  # Show "00:00" when time is up
 
+	#screen stuff depending on what timer is called
+    if type == 'start':
+        screen.fill((255, 255, 255))  # White background
+        font = pygame.font.Font(None, 100)
+        timer_display = font.render(timer_text, True, (0, 0, 0))  # Black
+        screen.blit(timer_display, (SCREEN_WIDTH // 2 - timer_display.get_width() // 2, SCREEN_HEIGHT // 2 - timer_display.get_height() // 2))
+
+    elif type == 'game':
     # Display the timer on the screen
-    font_text = pygame.font.Font(None, 36)
-    timer_display = font_text.render(timer_text, True, WHITE)
-    screen.blit(timer_display, (400, 500))  # Place the timer in the bottom middle
+        font = pygame.font.Font(None, 36)
+        timer_display = font.render(timer_text, True, (129,133,137)) #grey
+        screen.blit(timer_display, (400, 500))  # Place the timer in the bottom middle
 
     pygame.display.flip()
 
     if remaining_time <= 0:
-        # Trigger an action when time runs out
-        print("6-minute timer has expired!")
-        # You may want to end the game or trigger another action here
-
+        if type == 'game':
+            # Trigger an action when time runs out
+            print("6-minute timer has expired!")
+            # You may want to end the game or trigger another action here
+        else:
+            global start_count, play_action
+            start_count = False
+            play_action = True
+            init_timer(6)
 
 def test_func():
 # usable with 't' for now just used to view table players
@@ -400,7 +420,7 @@ key_to_action = {
 running = True
 on_splash_screen = True
 entry_screen_active = True
-play_action = True
+
 
 while running:
     for event in pygame.event.get():
@@ -440,23 +460,10 @@ while running:
         screen.fill((0, 0, 0))
         screen.blit(logo, ((SCREEN_WIDTH - logo.get_width()) // 2, 50))
         pygame.display.update()
-    elif countdown_active:
-        # Handle the countdown
+    
+    elif start_count:
         entry_screen_active = False
-        seconds_passed = (pygame.time.get_ticks() - start_ticks) // 1000
-        countdown_left = max(countdown_time - seconds_passed, 0)
-
-        # Display countdown
-        screen.fill((255, 255, 255))  # White background
-        font = pygame.font.Font(None, 100)
-        countdown_text = font.render(str(countdown_left), True, (0, 0, 0))  # Black countdown
-        screen.blit(countdown_text, (SCREEN_WIDTH // 2 - countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 - countdown_text.get_height() // 2))
-        pygame.display.update()
-
-        if countdown_left <= 0:
-            print("Countdown ended")
-            countdown_active = False
-            play_action = True
+        game_timer('start')
 
     #########################################################################
     elif action:
@@ -504,6 +511,6 @@ while running:
     # game action screen
     elif play_action:
             draw_action_screen()
-            game_timer()
+            game_timer('game')
 
 end_game
