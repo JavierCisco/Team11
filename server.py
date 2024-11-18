@@ -16,6 +16,16 @@ UDPServerSocket.bind((localIP, localPort))
 
 print("UDP server up and listening")
 
+def send_start_signal(address):
+    message = b"202"
+    UDPServerSocket.sendto(message, address)
+    print("Start signal sent to traffic generator")
+
+def send_stop_signal(address):
+    message = b"221"
+    UDPServerSocket.sendto(message, address)
+    print("Stop signal sent to traffic generator")
+
 # Listen for incoming datagrams
 try:
     while(True):
