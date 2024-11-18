@@ -32,15 +32,15 @@ show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
 # Functions to start the server and client
-def start_server():
-    subprocess.Popen(['python3', 'server.py'])  # Start the UDP server
+# def start_server():
+#     subprocess.Popen(['python3', 'server.py'])  # Start the UDP server
 
-def start_client():
-    subprocess.Popen(['python3', 'client.py'])  # Start the UDP client
+# def start_client():
+#     subprocess.Popen(['python3', 'client.py'])  # Start the UDP client
 
-# Call these functions to start the server and client
-start_server()
-start_client()
+# # Call these functions to start the server and client
+# start_server()
+# start_client()
 
 # UDP setup
 UDP_IP = "127.0.0.1"  # replace with your target IP
