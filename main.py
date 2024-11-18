@@ -67,7 +67,7 @@ def send_message(message):
 # Function to receive messages from the server
 def receive_message():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-        udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
+        # udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
         data, _ = udp_socket.recvfrom(1024)
         return data.decode(FORMAT)
     
@@ -459,117 +459,113 @@ on_splash_screen = True
 entry_screen_active = True
 play_action = True
 
-def game_loop():
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == show_main_screen_event and on_splash_screen:
-                on_splash_screen = False
-                
-            # check for mouse clicks
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                mouse_pos = event.pos
-                for button in buttons:
-                    button.is_clicked(mouse_pos)
-                for table in tables:
-                    for row in table:
-                        for text_box in row:
-                            clicked = text_box.is_clicked(mouse_pos)
-                            if clicked is not None:
-                                active_table_id, row, col = clicked
-                                handle_box_click(row, col)
-                                # text_box.active = True
-                    
-            # check for keypress events
-            elif event.type == pygame.KEYDOWN:
-                if event.key in key_to_action:
-                    key_to_action[event.key]()
-            
-            # Handle events for text boxes in the tables
-            for table in tables:
-                for row in table:
-                    for text_box in row:
-                        text_box.handle_event(event)
-
-
-        if on_splash_screen:
-            # display the splash screen with image
-            screen.fill((0, 0, 0))
-            screen.blit(logo, ((SCREEN_WIDTH - logo.get_width()) // 2, 50))
-            pygame.display.update()
-        elif countdown_active:
-            # Handle the countdown
-            entry_screen_active = False
-            seconds_passed = (pygame.time.get_ticks() - start_ticks) // 1000
-            countdown_left = max(countdown_time - seconds_passed, 0)
-
-            # Display countdown
-            screen.fill((255, 255, 255))  # White background
-            font = pygame.font.Font(None, 100)
-            countdown_text = font.render(str(countdown_left), True, (0, 0, 0))  # Black countdown
-            screen.blit(countdown_text, (SCREEN_WIDTH // 2 - countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 - countdown_text.get_height() // 2))
-            pygame.display.update()
-
-            if countdown_left <= 0:
-                print("Countdown ended")
-                countdown_active = False
-                play_action = True
-
-        #########################################################################
-        elif action:
-            entry_screen_active = not entry_screen_active
-            action = False
-            play_action = True
-            pygame.display.update()       
-        ##########################################################################   
-        
-        elif entry_screen_active:
-            # draw buttons screen
-            screen.fill((255, 255, 255))
-            ###################################################
-            BLACK = (0,0,0)
-            WHITE = (255,255,255)
-            pygame.display.set_caption("Entry Terminal")
-            font = pygame.font.Font(None, 36)
-            text = font.render("Edit Current Game",True, BLACK)
-            screen.blit(text, (280, 0))
-            pygame.draw.rect(screen, BLACK, pygame.Rect(0, 550, 800, 40))
-            text = font.render("<Del> to Delete Player, <i> to Insert Player or Edit Codename", True, WHITE)
-            screen.blit(text, (50,560))
-            ##################################################
-            
-            # Draw the tables
-            for table in tables:
-                for row in table:
-                    for text_box in row:
-                        text_box.draw(screen)
-                        
-            #draw columu labels (left)
-            label_font = pygame.font.Font(None, 24)
-            name_label = label_font.render("ID", True, BLACK)
-            id_label = label_font.render("Name", True, BLACK)
-            screen.blit(name_label, (100, 30))
-            screen.blit(id_label, (200, 30)) 
-            # draw column labels (right)
-            screen.blit(name_label, (450, 30)) 
-            screen.blit(id_label, (550, 30))
-                        
-            for button in buttons:
-                button.draw()
-            pygame.display.update()
-
-        # game action screen
-        elif play_action:
-                draw_action_screen()
-                game_timer()
-
 # Start the update listener thread
 listener_thread = threading.Thread(target=listen_for_updates, daemon=True)
 listener_thread.start()
 
-# Run the game loop
-if __name__ == "__main__":
-    game_loop()
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == show_main_screen_event and on_splash_screen:
+            on_splash_screen = False
+            
+        # check for mouse clicks
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mouse_pos = event.pos
+            for button in buttons:
+                button.is_clicked(mouse_pos)
+            for table in tables:
+                for row in table:
+                    for text_box in row:
+                        clicked = text_box.is_clicked(mouse_pos)
+                        if clicked is not None:
+                            active_table_id, row, col = clicked
+                            handle_box_click(row, col)
+                            # text_box.active = True
+                
+        # check for keypress events
+        elif event.type == pygame.KEYDOWN:
+            if event.key in key_to_action:
+                key_to_action[event.key]()
+        
+        # Handle events for text boxes in the tables
+        for table in tables:
+            for row in table:
+                for text_box in row:
+                    text_box.handle_event(event)
+
+
+    if on_splash_screen:
+        # display the splash screen with image
+        screen.fill((0, 0, 0))
+        screen.blit(logo, ((SCREEN_WIDTH - logo.get_width()) // 2, 50))
+        pygame.display.update()
+    elif countdown_active:
+        # Handle the countdown
+        entry_screen_active = False
+        seconds_passed = (pygame.time.get_ticks() - start_ticks) // 1000
+        countdown_left = max(countdown_time - seconds_passed, 0)
+
+        # Display countdown
+        screen.fill((255, 255, 255))  # White background
+        font = pygame.font.Font(None, 100)
+        countdown_text = font.render(str(countdown_left), True, (0, 0, 0))  # Black countdown
+        screen.blit(countdown_text, (SCREEN_WIDTH // 2 - countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 - countdown_text.get_height() // 2))
+        pygame.display.update()
+
+        if countdown_left <= 0:
+            print("Countdown ended")
+            countdown_active = False
+            play_action = True
+
+    #########################################################################
+    elif action:
+        entry_screen_active = not entry_screen_active
+        action = False
+        play_action = True
+        pygame.display.update()       
+    ##########################################################################   
+    
+    elif entry_screen_active:
+        # draw buttons screen
+        screen.fill((255, 255, 255))
+        ###################################################
+        BLACK = (0,0,0)
+        WHITE = (255,255,255)
+        pygame.display.set_caption("Entry Terminal")
+        font = pygame.font.Font(None, 36)
+        text = font.render("Edit Current Game",True, BLACK)
+        screen.blit(text, (280, 0))
+        pygame.draw.rect(screen, BLACK, pygame.Rect(0, 550, 800, 40))
+        text = font.render("<Del> to Delete Player, <i> to Insert Player or Edit Codename", True, WHITE)
+        screen.blit(text, (50,560))
+        ##################################################
+        
+        # Draw the tables
+        for table in tables:
+            for row in table:
+                for text_box in row:
+                    text_box.draw(screen)
+                    
+        #draw columu labels (left)
+        label_font = pygame.font.Font(None, 24)
+        name_label = label_font.render("ID", True, BLACK)
+        id_label = label_font.render("Name", True, BLACK)
+        screen.blit(name_label, (100, 30))
+        screen.blit(id_label, (200, 30)) 
+        # draw column labels (right)
+        screen.blit(name_label, (450, 30)) 
+        screen.blit(id_label, (550, 30))
+                    
+        for button in buttons:
+            button.draw()
+        pygame.display.update()
+
+    # game action screen
+    elif play_action:
+            draw_action_screen()
+            game_timer()
+
 
 end_game()
