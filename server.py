@@ -12,7 +12,7 @@ UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 UDPServerSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 # Bind to address and ip
-UDPServerSocket.bind((localIP, localPort))
+# UDPServerSocket.bind((localIP, localPort))
 
 print("UDP server up and listening")
 
