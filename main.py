@@ -46,7 +46,7 @@ start_client()
 UDP_IP = "127.0.0.1"  # replace with your target IP
 UDP_PORT = 7501       # the port to broadcast equipment codes
 udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-udp_socket.bind(("127.0.0.1", 7501))
+# udp_socket.bind(("127.0.0.1", 7501))
 
 def send_equipment_code(code):
     message = str(code).encode('utf-8')
