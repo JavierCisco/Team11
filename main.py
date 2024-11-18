@@ -5,9 +5,13 @@ import random
 import subprocess
 from database import *
 
+from music import Music
+
 # initializing pygame
 pygame.init()
 pygame.mixer.init()
+
+music = Music()
 
 # screen dimensions
 SCREEN_WIDTH = 1000
@@ -19,14 +23,15 @@ pygame.display.set_caption("Splash Screen")
 
 # load and display the splash image
 try:
-    splash_sound = pygame.mixer.Sound("theme.mp3")
+    music.load_track("Track03.mp3")
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except Exception as error:
     print("Error in Splash Screen: {error}")
     pygame.quit()
     sys.exit()
-splash_sound.play()
+
+music.play_track(start=120)
 # set a timer to show the main screen after 3 seconds
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
@@ -164,6 +169,10 @@ start_ticks = 0  # tracks when countdown started
 
 def start_game():
     print("Start Game clicked!")
+    music.stop_track()
+    music.load_track("Track01.mp3")  
+    music.play_track(start=67)
+    initial_music_started = True
     global countdown_active, start_ticks
     countdown_active = True  # Start the countdown
     start_ticks = pygame.time.get_ticks()  # Get the current time in milliseconds
@@ -377,7 +386,7 @@ running = True
 on_splash_screen = True
 entry_screen_active = True
 play_action = True
-
+music_started = False
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -428,6 +437,17 @@ while running:
         countdown_text = font.render(str(countdown_left), True, (0, 0, 0))  # Black countdown
         screen.blit(countdown_text, (SCREEN_WIDTH // 2 - countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 - countdown_text.get_height() // 2))
         pygame.display.update()
+
+
+        if countdown_left == 16 and not music_started:
+            music.stop_track()
+            music.load_track("Track08.mp3")  # Track to play at 8 seconds
+            music.play_track(start=0)
+            music_started = True
+            initial_music_started = False
+
+
+        
 
         if countdown_left <= 0:
             print("Countdown ended")
