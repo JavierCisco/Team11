@@ -532,6 +532,7 @@ while running:
         pygame.display.update()
 
         if countdown_left <= 0:
+	    send_message("202")
             print("Countdown ended")
             countdown_active = False
             play_action = True
@@ -581,7 +582,6 @@ while running:
 
     # game action screen
     elif play_action:
-            send_message("202")
             draw_action_screen()
             game_timer()
 
