@@ -16,6 +16,11 @@ UDPServerSocket.bind((localIP, localPort))
 
 print("UDP server up and listening")
 
+def send_equipment_code(code, address=("127.0.0.1", 7501)):
+    message = str(code).encode('utf-8')
+    UDPServerSocket.sendto(message, address)
+    print(f"Sent equipment code: {code}")
+
 def send_start_signal(address):
     message = b"202"
     UDPServerSocket.sendto(message, address)
@@ -38,8 +43,15 @@ try:
         
         print(clientMsg)
         print(clientIP)
+
+        if message == "START":
+            send_start_signal(address)
+        elif message == "STOP":
+            send_stop_signal(address)
+        else:
+            print(f"Unhandled message: {message}")
     
         # Sending a reply to client
-        UDPServerSocket.sendto(bytesToSend, address)
+        # UDPServerSocket.sendto(bytesToSend, address)
 finally:
     UDPServerSocket.close()
