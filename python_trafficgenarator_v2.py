@@ -1,6 +1,8 @@
 import socket
 import random
 import time
+from main import start_game, add_player, send_equipment_code
+
 
 bufferSize  = 1024
 serverAddressPort   = ("127.0.0.1", 7500)
