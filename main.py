@@ -532,7 +532,7 @@ while running:
         pygame.display.update()
 
         if countdown_left <= 0:
-	    send_message("202")
+            send_message("202")
             print("Countdown ended")
             countdown_active = False
             play_action = True
