@@ -3,10 +3,9 @@ import sys
 import socket
 import random
 import subprocess
-# additions -Ame
+
 import threading
 import time
-# Only in between
 from database import *
 
 # initializing pygame
