@@ -45,7 +45,7 @@ start_client()
 # UDP setup
 UDP_IP = "127.0.0.1"  # replace with your target IP
 UDP_PORT = 7501       # the port to broadcast equipment codes
-udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 udp_socket.bind(("127.0.0.1", 7501))
 
 def send_equipment_code(code):
@@ -408,8 +408,8 @@ def process_traffic_event(message):
 
 def send_start_signal():
     start_message = "202"
-    udp_socket.sendto(start_message.encode('utf-8'), ("127.0.0.1", 7500))  # Traffic generator's address and port
-    print("Start signal (202) sent to traffic generator.")
+    udp_socket.sendto(str("202").encode('utf-8'), ("127.0.0.1", 7500))  # Traffic generator's address and port
+    # print("Start signal (202) sent to traffic generator.")
 
 def send_stop_signal():
     stop_message = "221"
@@ -452,7 +452,7 @@ key_to_action = {
 }
 
 start_traffic_generator()
-send_start_signal()
+
 
 # main loop
 running = True
@@ -522,6 +522,7 @@ while running:
         if countdown_left <= 0:
             print("Countdown ended")
             countdown_active = False
+            send_start_signal()
             play_action = True
 
     #########################################################################
