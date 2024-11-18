@@ -3,11 +3,11 @@ import sys
 import socket
 import random
 import subprocess
-from database import *
-# import pygame.mixer
+# additions -Ame
 import threading
-from server import UDPServerSocket
-from client import UDPClientSocket, serverAddressPort
+import time
+# Only in between
+from database import *
 
 # initializing pygame
 pygame.init()
@@ -43,52 +43,62 @@ start_SC('server')
 start_SC('client')
 
 # UDP setup
-UDP_IP = "127.0.0.1"  # replace with your target IP
-UDP_PORT = 7500       # the port to broadcast equipment codes
-udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# UDP_IP = "127.0.0.1"  # replace with your target IP
+# UDP_PORT = 7500       # the port to broadcast equipment codes
+# udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# Constants for communication
+SERVER = '127.0.0.1'
+BROADCAST_PORT = 7500
+RECEIVE_PORT = 7501
+FORMAT = 'utf-8'
 
 def send_equipment_code(code):
-    message = str(code).encode('utf-8')
-    udp_socket.sendto(message, (UDP_IP, UDP_PORT))
+    message = str(code).encode(FORMAT)
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+        udp_socket.sendto(message, (SERVER, BROADCAST_PORT))
     print(f"Sent equipment code: {code}")
 
-def handle_udp_messages():
-    while running:
-        try:
-            message, address = UDPServerSocket.recvfrom(1024)
-            message = message.decode('utf-8')
-            print(f"Received UDP message: {message}")
-            process_udp_message(message)
-        except Exception as e:
-            print(f"Error in UDP handling: {e}")
+# Function to send messages to the server
+def send_message(message):
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+        udp_socket.sendto(message.encode(FORMAT), (SERVER, BROADCAST_PORT))
 
-# Function to process UDP messages
-def process_udp_message(message):
-    global red_team, green_team
-
-    if message == "43":
-        # Green base scored
-        for player in green_team:
-            player_name, score = player
-            player = (player_name, score + 100)
-        print("Green base scored!")
+# Function to receive messages from the server
+def receive_message():
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+        udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
+        data, _ = udp_socket.recvfrom(1024)
+        return data.decode(FORMAT)
+    
+# Handle game events received from the server
+def process_game_event(message):
+    if message == "202":
+        print("[GAME STARTED] Starting the game!")
+    elif message == "221":
+        print("[GAME ENDED] Stopping the game.")
+    elif message == "43":
+        print("[GREEN BASE HIT] Updating score...")
+        update_score("Green", 100)
     elif message == "53":
-        # Red base scored
-        for player in red_team:
-            player_name, score = player
-            player = (player_name, score + 100)
-        print("Red base scored!")
+        print("[RED BASE HIT] Updating score...")
+        update_score("Red", 100)
     else:
-        # General player hit logic
-        try:
-            player_hit, player_transmitting = map(int, message.split(':'))
-            print(f"Player {player_hit} was hit by {player_transmitting}")
-        except ValueError:
-            print("Invalid message format received.")
+        print(f"[EVENT] Received: {message}")
 
-# Start UDP listener in a separate thread
-udp_listener_thread = threading.Thread(target=handle_udp_messages, daemon=True)
-udp_listener_thread.start()
+# Update scores for teams
+team_scores = {"Red": 0, "Green": 0}
+
+def update_score(team, points):
+    if team in team_scores:
+        team_scores[team] += points
+        print(f"[SCORE UPDATE] {team} Team: {team_scores[team]} points")
+
+# Thread to listen for updates from the server
+def listen_for_updates():
+    while True:
+        message = receive_message()
+        process_game_event(message)
 
 # TextBox class for table cells
 class TextBox:
@@ -201,13 +211,12 @@ countdown_time = 30  # 30 seconds countdown
 start_ticks = 0  # tracks when countdown started
 
 def start_game():
+    send_message("202")
+    print("Start Game clicked!")
     global countdown_active, start_ticks
-    countdown_active = True
-    start_ticks = pygame.time.get_ticks()
-    # game_music.play(-1)  # Loop the music
-    # Broadcast '202' to signify game start
-    UDPClientSocket.sendto(b'202', serverAddressPort)
-    print("Game started, code '202' broadcasted!")
+    countdown_active = True  # Start the countdown
+    start_ticks = pygame.time.get_ticks()  # Get the current time in milliseconds
+    print("Countdown started!")
 
 def pre_entered_games():
     print("PreEntered Games clicked!")
@@ -327,15 +336,12 @@ def delete_player():
     print(f'Player {playID} removed!')
 
 def end_game():
-    global running
-    running = False
-    # Broadcast '221' three times
     for _ in range(3):
-        UDPClientSocket.sendto(b'221', serverAddressPort)
-    print("Game ended, code '221' broadcasted!")
-    # game_music.stop()
-    bye_data()
+        send_message("221")
+        time.sleep(0.1)
+    bye_data()	
     pygame.quit()
+    # udp_socket.close()
     sys.exit()
 
 game_start_time = pygame.time.get_ticks()
@@ -400,6 +406,7 @@ def game_timer():
 
     # Display the timer on the screen
     font_text = pygame.font.Font(None, 36)
+    WHITE = (255,255,255)
     timer_display = font_text.render(timer_text, True, WHITE)
     screen.blit(timer_display, (400, 500))  # Place the timer in the bottom middle
 
@@ -452,108 +459,117 @@ on_splash_screen = True
 entry_screen_active = True
 play_action = True
 
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == show_main_screen_event and on_splash_screen:
-            on_splash_screen = False
+def game_loop():
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == show_main_screen_event and on_splash_screen:
+                on_splash_screen = False
+                
+            # check for mouse clicks
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                mouse_pos = event.pos
+                for button in buttons:
+                    button.is_clicked(mouse_pos)
+                for table in tables:
+                    for row in table:
+                        for text_box in row:
+                            clicked = text_box.is_clicked(mouse_pos)
+                            if clicked is not None:
+                                active_table_id, row, col = clicked
+                                handle_box_click(row, col)
+                                # text_box.active = True
+                    
+            # check for keypress events
+            elif event.type == pygame.KEYDOWN:
+                if event.key in key_to_action:
+                    key_to_action[event.key]()
             
-        # check for mouse clicks
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            mouse_pos = event.pos
-            for button in buttons:
-                button.is_clicked(mouse_pos)
+            # Handle events for text boxes in the tables
             for table in tables:
                 for row in table:
                     for text_box in row:
-                        clicked = text_box.is_clicked(mouse_pos)
-                        if clicked is not None:
-                            active_table_id, row, col = clicked
-                            handle_box_click(row, col)
-                            # text_box.active = True
-                
-        # check for keypress events
-        elif event.type == pygame.KEYDOWN:
-            if event.key in key_to_action:
-                key_to_action[event.key]()
-        
-        # Handle events for text boxes in the tables
-        for table in tables:
-            for row in table:
-                for text_box in row:
-                    text_box.handle_event(event)
+                        text_box.handle_event(event)
 
 
-    if on_splash_screen:
-        # display the splash screen with image
-        screen.fill((0, 0, 0))
-        screen.blit(logo, ((SCREEN_WIDTH - logo.get_width()) // 2, 50))
-        pygame.display.update()
-    elif countdown_active:
-        # Handle the countdown
-        entry_screen_active = False
-        seconds_passed = (pygame.time.get_ticks() - start_ticks) // 1000
-        countdown_left = max(countdown_time - seconds_passed, 0)
+        if on_splash_screen:
+            # display the splash screen with image
+            screen.fill((0, 0, 0))
+            screen.blit(logo, ((SCREEN_WIDTH - logo.get_width()) // 2, 50))
+            pygame.display.update()
+        elif countdown_active:
+            # Handle the countdown
+            entry_screen_active = False
+            seconds_passed = (pygame.time.get_ticks() - start_ticks) // 1000
+            countdown_left = max(countdown_time - seconds_passed, 0)
 
-        # Display countdown
-        screen.fill((255, 255, 255))  # White background
-        font = pygame.font.Font(None, 100)
-        countdown_text = font.render(str(countdown_left), True, (0, 0, 0))  # Black countdown
-        screen.blit(countdown_text, (SCREEN_WIDTH // 2 - countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 - countdown_text.get_height() // 2))
-        pygame.display.update()
+            # Display countdown
+            screen.fill((255, 255, 255))  # White background
+            font = pygame.font.Font(None, 100)
+            countdown_text = font.render(str(countdown_left), True, (0, 0, 0))  # Black countdown
+            screen.blit(countdown_text, (SCREEN_WIDTH // 2 - countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 - countdown_text.get_height() // 2))
+            pygame.display.update()
 
-        if countdown_left <= 0:
-            print("Countdown ended")
-            countdown_active = False
+            if countdown_left <= 0:
+                print("Countdown ended")
+                countdown_active = False
+                play_action = True
+
+        #########################################################################
+        elif action:
+            entry_screen_active = not entry_screen_active
+            action = False
             play_action = True
-
-    #########################################################################
-    elif action:
-        entry_screen_active = not entry_screen_active
-        action = False
-        play_action = True
-        pygame.display.update()       
-    ##########################################################################   
-    
-    elif entry_screen_active:
-        # draw buttons screen
-        screen.fill((255, 255, 255))
-        ###################################################
-        BLACK = (0,0,0)
-        WHITE = (255,255,255)
-        pygame.display.set_caption("Entry Terminal")
-        font = pygame.font.Font(None, 36)
-        text = font.render("Edit Current Game",True, BLACK)
-        screen.blit(text, (280, 0))
-        pygame.draw.rect(screen, BLACK, pygame.Rect(0, 550, 800, 40))
-        text = font.render("<Del> to Delete Player, <i> to Insert Player or Edit Codename", True, WHITE)
-        screen.blit(text, (50,560))
-        ##################################################
+            pygame.display.update()       
+        ##########################################################################   
         
-        # Draw the tables
-        for table in tables:
-            for row in table:
-                for text_box in row:
-                    text_box.draw(screen)
-                    
-        #draw columu labels (left)
-        label_font = pygame.font.Font(None, 24)
-        name_label = label_font.render("ID", True, BLACK)
-        id_label = label_font.render("Name", True, BLACK)
-        screen.blit(name_label, (100, 30))
-        screen.blit(id_label, (200, 30)) 
-        # draw column labels (right)
-        screen.blit(name_label, (450, 30)) 
-        screen.blit(id_label, (550, 30))
-                    
-        for button in buttons:
-            button.draw()
-        pygame.display.update()
+        elif entry_screen_active:
+            # draw buttons screen
+            screen.fill((255, 255, 255))
+            ###################################################
+            BLACK = (0,0,0)
+            WHITE = (255,255,255)
+            pygame.display.set_caption("Entry Terminal")
+            font = pygame.font.Font(None, 36)
+            text = font.render("Edit Current Game",True, BLACK)
+            screen.blit(text, (280, 0))
+            pygame.draw.rect(screen, BLACK, pygame.Rect(0, 550, 800, 40))
+            text = font.render("<Del> to Delete Player, <i> to Insert Player or Edit Codename", True, WHITE)
+            screen.blit(text, (50,560))
+            ##################################################
+            
+            # Draw the tables
+            for table in tables:
+                for row in table:
+                    for text_box in row:
+                        text_box.draw(screen)
+                        
+            #draw columu labels (left)
+            label_font = pygame.font.Font(None, 24)
+            name_label = label_font.render("ID", True, BLACK)
+            id_label = label_font.render("Name", True, BLACK)
+            screen.blit(name_label, (100, 30))
+            screen.blit(id_label, (200, 30)) 
+            # draw column labels (right)
+            screen.blit(name_label, (450, 30)) 
+            screen.blit(id_label, (550, 30))
+                        
+            for button in buttons:
+                button.draw()
+            pygame.display.update()
 
-    # game action screen
-    elif play_action:
-            draw_action_screen()
-            game_timer()
+        # game action screen
+        elif play_action:
+                draw_action_screen()
+                game_timer()
 
-end_game
+# Start the update listener thread
+listener_thread = threading.Thread(target=listen_for_updates, daemon=True)
+listener_thread.start()
+
+# Run the game loop
+if __name__ == "__main__":
+    game_loop()
+
+end_game()
