@@ -35,6 +35,8 @@ splash_sound.play()
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
+action_log = []
+
 # Functions to start the server and client
 def start_SC(file: str):
     subprocess.Popen(['python3', f'{file}.py'])  # Start the UDP server
@@ -73,18 +75,26 @@ def receive_message():
     
 # Handle game events received from the server
 def process_game_event(message):
+    global team_scores, action_log
     if message == "202":
         print("[GAME STARTED] Starting the game!")
+        action_log.append("Game Started!")
     elif message == "221":
         print("[GAME ENDED] Stopping the game.")
+        action_log.append("Game Ended!")
+    elif ":" in message:
+        transmit_id, hit_id = message.split(":")
+        action_log.append(f"Player {transmit_id} hit Player {hit_id}")
+        update_score("Red" if int(transmit_id) % 2 != 0 else "Green", 10)
     elif message == "43":
-        print("[GREEN BASE HIT] Updating score...")
+        action_log.append("Green Base Hit! +100 Points")
         update_score("Green", 100)
     elif message == "53":
-        print("[RED BASE HIT] Updating score...")
+        action_log.append("Red Base Hit! +100 Points")
         update_score("Red", 100)
     else:
-        print(f"[EVENT] Received: {message}")
+        print(f"[UNKNOWN EVENT] Received: {message}")
+        action_log.append(f"Unknown Event: {message}")
 
 # Update scores for teams
 team_scores = {"Red": 0, "Green": 0}
@@ -388,6 +398,14 @@ def draw_action_screen():
     # Draw the action log header
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
+     # Draw action log
+    y_offset = 150
+    for action in reversed(action_log[-10:]):  # Show the last 10 actions
+        action_text = font.render(action, True, (255, 255, 255))
+        screen.blit(action_text, (50, y_offset))
+        y_offset += 30
+
+    pygame.display.update()
 
     # Timer logic (Update this part)
 def init_timer():
@@ -566,6 +584,5 @@ while running:
     elif play_action:
             draw_action_screen()
             game_timer()
-
 
 end_game()
