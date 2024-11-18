@@ -48,7 +48,7 @@ start_client()
 # UDP_PORT = 7500       
 udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 def send_message_to_server(message):
-    udp_socket.sendto(message.encode('utf-8'), ("127.0.0.1", 7500))
+    udp_socket.sendto(message.encode('utf-8'), ("127.0.0.1", 20001))
     print(f"Sent message to server: {message}")
 
 # def send_equipment_code(code):
