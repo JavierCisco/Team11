@@ -21,7 +21,7 @@ UDPServerSocketReceive = socket.socket(family=socket.AF_INET, type=socket.SOCK_D
 UDPClientSocketTransmit = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
 # bind server socket
-UDPServerSocketReceive.bind(serverAddressPort)
+# UDPServerSocketReceive.bind(serverAddressPort)
 
 # wait for start from game software
 print ("")
