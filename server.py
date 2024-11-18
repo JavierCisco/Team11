@@ -45,17 +45,21 @@ class Server():
         self.server_broadcast.close()
 
     def handle_client(self, msg: str):
-        # Process messages received from clients
+        print(f'[DEBUG] Received message: {msg}')
         if ':' in msg:
-            try:
-                transmit_id, hit_id = msg.split(':')
+            parts = msg.split(':')
+            if len(parts) == 2:
+                transmit_id, hit_id = parts
                 print(f'[HIT EVENT] Transmit ID: {transmit_id}, Hit ID: {hit_id}')
                 self.send_hit_id(transmit_id, hit_id)
-            except ValueError:
-                print('[ERROR] Invalid message format. Expected: player_id:hit_id')
-        else:
-            print(f'[BROADCASTING] Received: {msg}')
+            else:
+                print(f'[ERROR] Malformed message. Expected "player_id:hit_id", got: {msg}')
+        elif msg.isdigit():
+            print(f'[SINGLE ID RECEIVED] Message: {msg}')
+            # Handle single ID messages if needed
             self.server_broadcast.sendto(msg.encode(FORMAT), BROADCAST_ADDR)
+        else:
+            print(f'[ERROR] Unrecognized message format: {msg}')
 
     def send_hit_id(self, equip_id_str: str, hit_id_str: str):
         # Handle hit events and update points accordingly
