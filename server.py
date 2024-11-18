@@ -10,7 +10,7 @@ SERVER = '127.0.0.1'
 RECEIVE_ADDR = (SERVER, RECEIVE_PORT)
 BROADCAST_ADDR = (SERVER, BROADCAST_PORT)
 
-class Server:
+class Server():
     def __init__(self):
         # Initialize sockets for receiving and broadcasting
         self.server_recv = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
