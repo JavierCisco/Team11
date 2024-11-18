@@ -32,15 +32,15 @@ show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
 # Functions to start the server and client
-# def start_server():
-#     subprocess.Popen(['python3', 'server.py'])  # Start the UDP server
+def start_server():
+    subprocess.Popen(['python3', 'server.py'])  # Start the UDP server
 
-# def start_client():
-#     subprocess.Popen(['python3', 'client.py'])  # Start the UDP client
+def start_client():
+    subprocess.Popen(['python3', 'client.py'])  # Start the UDP client
 
 # Call these functions to start the server and client
-# start_server()
-# start_client()
+start_server()
+start_client()
 
 # UDP setup
 UDP_IP = "127.0.0.1"  # replace with your target IP
@@ -292,8 +292,8 @@ def delete_player():
     print(f'Player {playID} removed!')
 
 def end_game():
-    bye_data()	
     send_stop_signal()
+    bye_data()	
     pygame.quit()
     udp_socket.close()
     sys.exit()
@@ -365,8 +365,10 @@ def draw_action_screen():
         print("6-minute timer has expired!")
         # You may want to end the game or trigger another action here
 
+action_log = []
+
 def process_traffic_event(message):
-    global red_team, green_team
+    global action_log, red_team, green_team
     data = message.split(":")
     if len(data) == 2:
         player_id, action = data
@@ -376,16 +378,22 @@ def process_traffic_event(message):
             for i, (id, name, score) in enumerate(red_team):
                 if id == player_id:
                     red_team[i] = (f"{name} B", score)  # Add "B"
-                    print(f"Red Player {name} hit the base!")
+                    log_message = f"Red Player {name} hit the base!"
+                    action_log.append(log_message)
+                    print(log_message)
         elif action == "53":  # Base hit for Green Team
             for i, (id, name, score) in enumerate(green_team):
                 if id == player_id:
                     green_team[i] = (f"{name} B", score)  # Add "B"
-                    print(f"Green Player {name} hit the base!")
+                    log_message = f"Gree Player {name} hit the base!"
+                    action_log.append(log_message)
+                    print(log_message)
 
         # Process hit event
         else:
-            print(f"Player {player_id} performed action {action}")
+            log_message = f"Player {player_id} performed action {action}"
+            action_log.append(log_message)
+            print(log_message)
 
 def send_start_signal():
     start_message = "202"
