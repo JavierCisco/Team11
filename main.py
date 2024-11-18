@@ -4,6 +4,10 @@ import socket
 import random
 import subprocess
 from database import *
+import pygame.mixer
+import threading
+from server import UDPServerSocket
+from client import UDPClientSocket, serverAddressPort
 
 # initializing pygame
 pygame.init()
@@ -32,26 +36,59 @@ show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
 # Functions to start the server and client
-def start_server():
-    subprocess.Popen(['python3', 'server.py'])  # Start the UDP server
-
-def start_client():
-    subprocess.Popen(['python3', 'client.py'])  # Start the UDP client
-
-# # Call these functions to start the server and client
-start_server()
-start_client()
+def start_SC(file: str):
+    subprocess.Popen(['python3', f'{file}.py'])  # Start the UDP server
+# Call this functions to start the server and client
+start_SC('server')
+start_SC('client')
 
 # UDP setup
 UDP_IP = "127.0.0.1"  # replace with your target IP
-UDP_PORT = 7501       # the port to broadcast equipment codes
-udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-udp_socket.bind(("127.0.0.1", 7501))
+UDP_PORT = 7500       # the port to broadcast equipment codes
+udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 def send_equipment_code(code):
     message = str(code).encode('utf-8')
     udp_socket.sendto(message, (UDP_IP, UDP_PORT))
     print(f"Sent equipment code: {code}")
+
+def handle_udp_messages():
+    while running:
+        try:
+            message, address = UDPServerSocket.recvfrom(1024)
+            message = message.decode('utf-8')
+            print(f"Received UDP message: {message}")
+            process_udp_message(message)
+        except Exception as e:
+            print(f"Error in UDP handling: {e}")
+
+# Function to process UDP messages
+def process_udp_message(message):
+    global red_team, green_team
+
+    if message == "43":
+        # Green base scored
+        for player in green_team:
+            player_name, score = player
+            player = (player_name, score + 100)
+        print("Green base scored!")
+    elif message == "53":
+        # Red base scored
+        for player in red_team:
+            player_name, score = player
+            player = (player_name, score + 100)
+        print("Red base scored!")
+    else:
+        # General player hit logic
+        try:
+            player_hit, player_transmitting = map(int, message.split(':'))
+            print(f"Player {player_hit} was hit by {player_transmitting}")
+        except ValueError:
+            print("Invalid message format received.")
+
+# Start UDP listener in a separate thread
+udp_listener_thread = threading.Thread(target=handle_udp_messages, daemon=True)
+udp_listener_thread.start()
 
 # TextBox class for table cells
 class TextBox:
@@ -162,35 +199,22 @@ action = False
 countdown_active = False
 countdown_time = 30  # 30 seconds countdown
 start_ticks = 0  # tracks when countdown started
-def start_traffic_generator():
-    try:
-        # Start the traffic generator script
-        process = subprocess.Popen(
-            ['python3', 'python_trafficgenarator_v2.py'],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        print("Traffic generator started successfully.")
-        return process  # Return the process handle
-    except FileNotFoundError:
-        print("Error: python_trafficgenarator_v2.py not found. Ensure the file is in the correct location.")
-        return None
-    except Exception as e:
-        print(f"Error starting traffic generator: {e}")
-        return None
 
 def start_game():
-    print("Start Game clicked!")
     global countdown_active, start_ticks
-    countdown_active = True  # Start the countdown
-    start_ticks = pygame.time.get_ticks()  # Get the current time in milliseconds
-    print("Countdown started!")
+    countdown_active = True
+    start_ticks = pygame.time.get_ticks()
+    # game_music.play(-1)  # Loop the music
+    # Broadcast '202' to signify game start
+    UDPClientSocket.sendto(b'202', serverAddressPort)
+    print("Game started, code '202' broadcasted!")
 
 def pre_entered_games():
     print("PreEntered Games clicked!")
     #########################
     global action
     action = not action
+    init_timer()
     print("Action Display")
     #########################
 
@@ -303,10 +327,15 @@ def delete_player():
     print(f'Player {playID} removed!')
 
 def end_game():
-    send_stop_signal()
-    bye_data()	
+    global running
+    running = False
+    # Broadcast '221' three times
+    for _ in range(3):
+        UDPClientSocket.sendto(b'221', serverAddressPort)
+    print("Game ended, code '221' broadcasted!")
+    # game_music.stop()
+    bye_data()
     pygame.quit()
-    udp_socket.close()
     sys.exit()
 
 game_start_time = pygame.time.get_ticks()
@@ -355,6 +384,10 @@ def draw_action_screen():
     screen.blit(action_header, (50, 200))
 
     # Timer logic (Update this part)
+def init_timer():
+	global game_start_time
+	game_start_time = pygame.time.get_ticks()
+def game_timer():
     elapsed_time = (pygame.time.get_ticks() - game_start_time) // 1000  # Elapsed time in seconds
     remaining_time = total_game_time - elapsed_time
 
@@ -366,6 +399,7 @@ def draw_action_screen():
         timer_text = "00:00"  # Show "00:00" when time is up
 
     # Display the timer on the screen
+    font_text = pygame.font.Font(None, 36)
     timer_display = font_text.render(timer_text, True, WHITE)
     screen.blit(timer_display, (400, 500))  # Place the timer in the bottom middle
 
@@ -376,45 +410,6 @@ def draw_action_screen():
         print("6-minute timer has expired!")
         # You may want to end the game or trigger another action here
 
-action_log = []
-
-def process_traffic_event(message):
-    global action_log, red_team, green_team
-    data = message.split(":")
-    if len(data) == 2:
-        player_id, action = data
-
-        # Process base hit
-        if action == "43":  # Base hit for Red Team
-            for i, (id, name, score) in enumerate(red_team):
-                if id == player_id:
-                    red_team[i] = (f"{name} B", score)  # Add "B"
-                    log_message = f"Red Player {name} hit the base!"
-                    action_log.append(log_message)
-                    print(log_message)
-        elif action == "53":  # Base hit for Green Team
-            for i, (id, name, score) in enumerate(green_team):
-                if id == player_id:
-                    green_team[i] = (f"{name} B", score)  # Add "B"
-                    log_message = f"Gree Player {name} hit the base!"
-                    action_log.append(log_message)
-                    print(log_message)
-
-        # Process hit event
-        else:
-            log_message = f"Player {player_id} performed action {action}"
-            action_log.append(log_message)
-            print(log_message)
-
-def send_start_signal():
-    start_message = "202"
-    udp_socket.sendto(str("202").encode('utf-8'), ("127.0.0.1", 7500))  # Traffic generator's address and port
-    # print("Start signal (202) sent to traffic generator.")
-
-def send_stop_signal():
-    stop_message = "221"
-    udp_socket.sendto(stop_message.encode('utf-8'), ("127.0.0.1", 7500))  # Traffic generator's address and port
-    print("Stop signal (221) sent to traffic generator.")
 
 def test_func():
 # usable with 't' for now just used to view table players
@@ -451,9 +446,6 @@ key_to_action = {
     pygame.K_F6: test_func
 }
 
-start_traffic_generator()
-
-
 # main loop
 running = True
 on_splash_screen = True
@@ -462,7 +454,6 @@ play_action = True
 
 while running:
     for event in pygame.event.get():
-
         if event.type == pygame.QUIT:
             running = False
         elif event.type == show_main_screen_event and on_splash_screen:
@@ -493,13 +484,6 @@ while running:
                 for text_box in row:
                     text_box.handle_event(event)
 
-    try:
-        udp_socket.settimeout(0.1)  # Non-blocking receive
-        message, _ = udp_socket.recvfrom(1024)
-        message = message.decode("utf-8")
-        process_traffic_event(message)
-    except socket.timeout:
-        pass
 
     if on_splash_screen:
         # display the splash screen with image
@@ -522,7 +506,6 @@ while running:
         if countdown_left <= 0:
             print("Countdown ended")
             countdown_active = False
-            send_start_signal()
             play_action = True
 
     #########################################################################
@@ -556,15 +539,13 @@ while running:
                     
         #draw columu labels (left)
         label_font = pygame.font.Font(None, 24)
-        name_label_left = label_font.render("ID", True, BLACK)
-        id_label_left = label_font.render("Name", True, BLACK)
-        screen.blit(name_label_left, (100, 30))
-        screen.blit(id_label_left, (200, 30)) 
+        name_label = label_font.render("ID", True, BLACK)
+        id_label = label_font.render("Name", True, BLACK)
+        screen.blit(name_label, (100, 30))
+        screen.blit(id_label, (200, 30)) 
         # draw column labels (right)
-        name_label_right = label_font.render("ID", True, BLACK)
-        id_label_right = label_font.render("Name", True, BLACK)
-        screen.blit(name_label_right, (450, 30)) 
-        screen.blit(id_label_right, (550, 30))
+        screen.blit(name_label, (450, 30)) 
+        screen.blit(id_label, (550, 30))
                     
         for button in buttons:
             button.draw()
@@ -573,5 +554,6 @@ while running:
     # game action screen
     elif play_action:
             draw_action_screen()
+            game_timer()
 
 end_game
