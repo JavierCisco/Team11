@@ -163,8 +163,21 @@ countdown_active = False
 countdown_time = 30  # 30 seconds countdown
 start_ticks = 0  # tracks when countdown started
 def start_traffic_generator():
-    subprocess.Popen(['python3', 'python_trafficgenarator_v2.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    print("Traffic generator started.")
+    try:
+        # Start the traffic generator script
+        process = subprocess.Popen(
+            ['python3', 'python_trafficgenarator_v2.py'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        print("Traffic generator started successfully.")
+        return process  # Return the process handle
+    except FileNotFoundError:
+        print("Error: python_trafficgenarator_v2.py not found. Ensure the file is in the correct location.")
+        return None
+    except Exception as e:
+        print(f"Error starting traffic generator: {e}")
+        return None
 
 def start_game():
     print("Start Game clicked!")
