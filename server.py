@@ -22,21 +22,23 @@ def send_equipment_code(code, address=("127.0.0.1", 7501)):
     print(f"Sent equipment code: {code}")
 
 def send_start_signal(address):
-    message = b"202"
-    UDPServerSocket.sendto(message, address)
-    print("Start signal sent to traffic generator")
+    send_equipment_code("202", address)
+    # message = "202"
+    # UDPServerSocket.sendto(message, address)
+    # print("Start signal sent to traffic generator")
 
 def send_stop_signal(address):
-    message = b"221"
-    UDPServerSocket.sendto(message, address)
-    print("Stop signal sent to traffic generator")
+    send_equipment_code("221", address)
+    # message = "221"
+    # UDPServerSocket.sendto(message, address)
+    # print("Stop signal sent to traffic generator")
 
 # Listen for incoming datagrams
 try:
     while(True):
     
         bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-        message = bytesAddressPair[0]
+        message = bytesAddressPair[0].decode('utf-8')
         address = bytesAddressPair[1]
         clientMsg = "Message from Client:{}".format(message)
         clientIP  = "Client IP Address:{}".format(address)
@@ -44,12 +46,12 @@ try:
         print(clientMsg)
         print(clientIP)
 
-        if clientMsg == "START":
+        if message == "START":
             send_start_signal(address)
-        elif clientMsg == "STOP":
+        elif message == "STOP":
             send_stop_signal(address)
         else:
-            print(f"Unhandled message: {clientMsg}")
+            print(f"Unhandled message: {message}")
     
         # Sending a reply to client
         # UDPServerSocket.sendto(bytesToSend, address)
