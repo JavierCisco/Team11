@@ -44,12 +44,12 @@ try:
         print(clientMsg)
         print(clientIP)
 
-        if message == "START":
+        if clientMsg == "START":
             send_start_signal(address)
-        elif message == "STOP":
+        elif clientMsg == "STOP":
             send_stop_signal(address)
         else:
-            print(f"Unhandled message: {message}")
+            print(f"Unhandled message: {clientMsg}")
     
         # Sending a reply to client
         # UDPServerSocket.sendto(bytesToSend, address)
