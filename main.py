@@ -42,19 +42,16 @@ def start_client():
 start_server()
 start_client()
 
-
 # UDP setup
-# UDP_IP = "127.0.0.1"  
-# UDP_PORT = 7500       
+UDP_IP = "127.0.0.1"  # replace with your target IP
+UDP_PORT = 7501       # the port to broadcast equipment codes
 udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-def send_message_to_server(message):
-    udp_socket.sendto(message.encode('utf-8'), ("127.0.0.1", 20001))
-    print(f"Sent message to server: {message}")
+udp_socket.bind(("127.0.0.1", 7501))
 
-# def send_equipment_code(code):
-#     message = str(code).encode('utf-8')
-#     udp_socket.sendto(message, (UDP_IP, UDP_PORT))
-#     print(f"Sent equipment code: {code}")
+def send_equipment_code(code):
+    message = str(code).encode('utf-8')
+    udp_socket.sendto(message, (UDP_IP, UDP_PORT))
+    print(f"Sent equipment code: {code}")
 
 # TextBox class for table cells
 class TextBox:
@@ -108,7 +105,6 @@ selected_row = None
 selected_col = None
 red_team = []
 green_team = []
-action_log = []
 
 # Table 1 (left side - columns 1 and 2)
 for row in range(10):
@@ -166,10 +162,14 @@ action = False
 countdown_active = False
 countdown_time = 30  # 30 seconds countdown
 start_ticks = 0  # tracks when countdown started
+def start_traffic_generator():
+    subprocess.Popen(['python3', 'trafficgenerator.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print("Traffic generator started.")
 
 def start_game():
     print("Start Game clicked!")
-    send_message_to_server("START")
+    start_traffic_generator()
+    send_start_signal()
     global countdown_active, start_ticks
     countdown_active = True  # Start the countdown
     start_ticks = pygame.time.get_ticks()  # Get the current time in milliseconds
@@ -206,6 +206,7 @@ def handle_box_click(row, col):
 def prompt_codename(player_id):
     input_active = True
     codename_textbox = TextBox(300,200,400,40)
+   
 
     while input_active:
         for event in pygame.event.get():
@@ -273,7 +274,7 @@ def add_player():
         print(f"Player added:\nTeam: {team}\nName: {code_name}\nID: {player_id}\nEquipment Code: {equipment_code}")
 
         # Broadcast the equipment code via UDP
-        # send_equipment_code(equipment_code)
+        send_equipment_code(equipment_code)
     else:
         print("No codename entered; player was not added.")
     add_player_to_team(team, code_name, score=0)
@@ -292,10 +293,20 @@ def delete_player():
 
 def end_game():
     bye_data()	
+    send_stop_signal()
     pygame.quit()
-    # udp_socket.close()
-    send_message_to_server("STOP")
+    udp_socket.close()
     sys.exit()
+
+game_start_time = pygame.time.get_ticks()
+game_time = pygame.time.get_ticks()
+total_game_time = 6 * 60
+
+def increment_score(player_name, points):
+    print('points added')
+def decrement_score(player_name, points):
+    print("points recreased")
+
 
 def draw_action_screen():
     screen.fill((0, 0, 0))  # Black background
@@ -303,7 +314,7 @@ def draw_action_screen():
     # Fonts
     font_title = pygame.font.Font(None, 48)
     font_text = pygame.font.Font(None, 36)
-
+  
     # Colors
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
@@ -332,16 +343,59 @@ def draw_action_screen():
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
 
-    # Draw the action log entries
-    for i, action in enumerate(action_log[-5:]):  # Show the last 5 actions
-        action_text = font_text.render(action, True, WHITE)
-        screen.blit(action_text, (50, 240 + i * 30))
+    # Timer logic (Update this part)
+    elapsed_time = (pygame.time.get_ticks() - game_start_time) // 1000  # Elapsed time in seconds
+    remaining_time = total_game_time - elapsed_time
 
-    # Draw the remaining time
-    # time_text = font_text.render(f"Time Remaining: {time_remaining}", True, WHITE)
-    # screen.blit(time_text, (50, 500))
+    if remaining_time > 0:
+        minutes = remaining_time // 60
+        seconds = remaining_time % 60
+        timer_text = f"{minutes:02}:{seconds:02}"
+    else:
+        timer_text = "00:00"  # Show "00:00" when time is up
+
+    # Display the timer on the screen
+    timer_display = font_text.render(timer_text, True, WHITE)
+    screen.blit(timer_display, (400, 500))  # Place the timer in the bottom middle
 
     pygame.display.flip()
+
+    if remaining_time <= 0:
+        # Trigger an action when time runs out
+        print("6-minute timer has expired!")
+        # You may want to end the game or trigger another action here
+
+def process_traffic_event(message):
+    global red_team, green_team
+    data = message.split(":")
+    if len(data) == 2:
+        player_id, action = data
+
+        # Process base hit
+        if action == "43":  # Base hit for Red Team
+            for i, (id, name, score) in enumerate(red_team):
+                if id == player_id:
+                    red_team[i] = (f"{name} B", score)  # Add "B"
+                    print(f"Red Player {name} hit the base!")
+        elif action == "53":  # Base hit for Green Team
+            for i, (id, name, score) in enumerate(green_team):
+                if id == player_id:
+                    green_team[i] = (f"{name} B", score)  # Add "B"
+                    print(f"Green Player {name} hit the base!")
+
+        # Process hit event
+        else:
+            print(f"Player {player_id} performed action {action}")
+
+def send_start_signal():
+    start_message = "202"
+    udp_socket.sendto(start_message.encode('utf-8'), ("127.0.0.1", 7500))  # Traffic generator's address and port
+    print("Start signal (202) sent to traffic generator.")
+
+def send_stop_signal():
+    stop_message = "221"
+    udp_socket.sendto(stop_message.encode('utf-8'), ("127.0.0.1", 7500))  # Traffic generator's address and port
+    print("Stop signal (221) sent to traffic generator.")
 
 def test_func():
 # usable with 't' for now just used to view table players
@@ -416,6 +470,13 @@ while running:
                 for text_box in row:
                     text_box.handle_event(event)
 
+    try:
+        udp_socket.settimeout(0.1)  # Non-blocking receive
+        message, _ = udp_socket.recvfrom(1024)
+        message = message.decode("utf-8")
+        process_traffic_event(message)
+    except socket.timeout:
+        pass
 
     if on_splash_screen:
         # display the splash screen with image
@@ -489,12 +550,4 @@ while running:
     elif play_action:
             draw_action_screen()
 
-        #temporary action log, team scores, and time
-            action_log = ["Player A hit Player B", "Player C hit Player D", "Player E hit the base"]
-            red_team_score = 5000
-            green_team_score = 4500
-            game_time_remaining = 60
-            # List of players on each team
-            red_team_players = ["Player A", "Player B", "Player C"]
-            green_team_players = ["Player D", "Player E", "Player F"]
 end_game
