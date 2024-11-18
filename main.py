@@ -5,9 +5,13 @@ import random
 import subprocess
 from database import *
 
+from music import Music
+
 # initializing pygame
 pygame.init()
 pygame.mixer.init()
+
+music = Music()
 
 # screen dimensions
 SCREEN_WIDTH = 1000
@@ -19,14 +23,15 @@ pygame.display.set_caption("Splash Screen")
 
 # load and display the splash image
 try:
-    splash_sound = pygame.mixer.Sound("theme.mp3")
+    music.load_track("Track03.mp3")
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except Exception as error:
     print("Error in Splash Screen: {error}")
     pygame.quit()
     sys.exit()
-splash_sound.play()
+
+music.play_track(start=120)
 # set a timer to show the main screen after 3 seconds
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
@@ -151,13 +156,7 @@ def game_parameters():
     print("Game Parameters clicked!")
 
 # Countdown variables
-##############################
 action = False
-##############################
-countdown_active = False
-countdown_time = 30  # 30 seconds countdown
-start_ticks = 0  # tracks when countdown started
-
 start_count = False
 
 def start_game():
@@ -165,8 +164,11 @@ def start_game():
     global start_count
     init_timer(0.5)
     start_count = True
-    #start_ticks = pygame.time.get_ticks()  # Get the current time in milliseconds
     
+    # music stuff
+    music.stop_track()
+    music.load_track("Track01.mp3")  
+    music.play_track(start=67)
     print("Countdown started!")
 
 def pre_entered_games():
@@ -338,7 +340,10 @@ def draw_action_screen():
     screen.blit(action_header, (50, 200))
 
     # Timer logic (Update this part)
+    
 play_action = True
+music_started = False
+
 def init_timer(minutes):
 	global game_start_time, total_game_time
 	game_start_time = pygame.time.get_ticks()
@@ -347,11 +352,16 @@ def init_timer(minutes):
 def game_timer(type: str):
     elapsed_time = (pygame.time.get_ticks() - game_start_time) // 1000  # Elapsed time in seconds
     remaining_time = total_game_time - elapsed_time
-
+    
+    global music_started
     if remaining_time > 0:
         minutes = remaining_time // 60
         seconds = remaining_time % 60
         timer_text = f"{minutes:02}:{seconds:02}"
+    elif remaining_time == 16:
+            music.stop_track()
+            music.load_track("Track08.mp3")  # Track to play at 8 seconds
+            music.play_track(start=0)
     else:
         timer_text = "00:00"  # Show "00:00" when time is up
 
@@ -421,7 +431,6 @@ running = True
 on_splash_screen = True
 entry_screen_active = True
 
-
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -463,7 +472,7 @@ while running:
     
     elif start_count:
         entry_screen_active = False
-        game_timer('start')
+        game_timer('start')        
 
     #########################################################################
     elif action:
