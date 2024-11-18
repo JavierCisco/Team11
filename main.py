@@ -291,13 +291,23 @@ def end_game():
     udp_socket.close()
     sys.exit()
 
+game_start_time = pygame.time.get_ticks()
+game_time = pygame.time.get_ticks()
+total_game_time = 6 * 60
+
+def increment_score(player_name, points):
+    print('points added')
+def decrement_score(player_name, points):
+    print("points recreased")
+
+
 def draw_action_screen():
     screen.fill((0, 0, 0))  # Black background
 
     # Fonts
     font_title = pygame.font.Font(None, 48)
     font_text = pygame.font.Font(None, 36)
-
+  
     # Colors
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
@@ -326,16 +336,28 @@ def draw_action_screen():
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
 
-    # Draw the action log entries
-    # for i, action in enumerate(action_log[-5:]):  # Show the last 5 actions
-    #     action_text = font_text.render(action, True, WHITE)
-    #     screen.blit(action_text, (50, 240 + i * 30))
+    # Timer logic (Update this part)
+    elapsed_time = (pygame.time.get_ticks() - game_start_time) // 1000  # Elapsed time in seconds
+    remaining_time = total_game_time - elapsed_time
 
-    # Draw the remaining time
-    # time_text = font_text.render(f"Time Remaining: {time_remaining}", True, WHITE)
-    # screen.blit(time_text, (50, 500))
+    if remaining_time > 0:
+        minutes = remaining_time // 60
+        seconds = remaining_time % 60
+        timer_text = f"{minutes:02}:{seconds:02}"
+    else:
+        timer_text = "00:00"  # Show "00:00" when time is up
+
+    # Display the timer on the screen
+    timer_display = font_text.render(timer_text, True, WHITE)
+    screen.blit(timer_display, (400, 500))  # Place the timer in the bottom middle
 
     pygame.display.flip()
+
+    if remaining_time <= 0:
+        # Trigger an action when time runs out
+        print("6-minute timer has expired!")
+        # You may want to end the game or trigger another action here
+
 
 def test_func():
 # usable with 't' for now just used to view table players
@@ -482,4 +504,5 @@ while running:
     # game action screen
     elif play_action:
             draw_action_screen()
+
 end_game
