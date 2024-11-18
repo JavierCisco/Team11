@@ -32,15 +32,11 @@ show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
 # Functions to start the server and client
-def start_server():
-    subprocess.Popen(['python3', 'server.py'])  # Start the UDP server
-
-def start_client():
-    subprocess.Popen(['python3', 'client.py'])  # Start the UDP client
-
-# Call these functions to start the server and client
-start_server()
-start_client()
+def start_SC(file: str):
+    subprocess.Popen(['python3', f'{file}.py'])  # Start the UDP server
+# Call this functions to start the server and client
+start_SC('server')
+start_SC('client')
 
 # UDP setup
 UDP_IP = "127.0.0.1"  # replace with your target IP
@@ -174,6 +170,7 @@ def pre_entered_games():
     #########################
     global action
     action = not action
+    init_timer()
     print("Action Display")
     #########################
 
@@ -337,6 +334,10 @@ def draw_action_screen():
     screen.blit(action_header, (50, 200))
 
     # Timer logic (Update this part)
+def init_timer():
+	global game_start_time
+	game_start_time = pygame.time.get_ticks()
+def game_timer():
     elapsed_time = (pygame.time.get_ticks() - game_start_time) // 1000  # Elapsed time in seconds
     remaining_time = total_game_time - elapsed_time
 
@@ -348,6 +349,7 @@ def draw_action_screen():
         timer_text = "00:00"  # Show "00:00" when time is up
 
     # Display the timer on the screen
+    font_text = pygame.font.Font(None, 36)
     timer_display = font_text.render(timer_text, True, WHITE)
     screen.blit(timer_display, (400, 500))  # Place the timer in the bottom middle
 
@@ -487,15 +489,13 @@ while running:
                     
         #draw columu labels (left)
         label_font = pygame.font.Font(None, 24)
-        name_label_left = label_font.render("ID", True, BLACK)
-        id_label_left = label_font.render("Equipment ID", True, BLACK)
-        screen.blit(name_label_left, (100, 30))
-        screen.blit(id_label_left, (200, 30)) 
+        name_label = label_font.render("ID", True, BLACK)
+        id_label = label_font.render("Name", True, BLACK)
+        screen.blit(name_label, (100, 30))
+        screen.blit(id_label, (200, 30)) 
         # draw column labels (right)
-        name_label_right = label_font.render("ID", True, BLACK)
-        id_label_right = label_font.render("Equipment ID", True, BLACK)
-        screen.blit(name_label_right, (450, 30)) 
-        screen.blit(id_label_right, (550, 30))
+        screen.blit(name_label, (450, 30)) 
+        screen.blit(id_label, (550, 30))
                     
         for button in buttons:
             button.draw()
@@ -504,5 +504,6 @@ while running:
     # game action screen
     elif play_action:
             draw_action_screen()
+            game_timer()
 
 end_game
