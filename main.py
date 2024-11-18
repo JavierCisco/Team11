@@ -4,7 +4,7 @@ import socket
 import random
 import subprocess
 from database import *
-import pygame.mixer
+# import pygame.mixer
 import threading
 from server import UDPServerSocket
 from client import UDPClientSocket, serverAddressPort
