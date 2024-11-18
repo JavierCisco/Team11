@@ -451,6 +451,9 @@ key_to_action = {
     pygame.K_F6: test_func
 }
 
+start_traffic_generator()
+send_start_signal()
+
 # main loop
 running = True
 on_splash_screen = True
@@ -459,8 +462,7 @@ play_action = True
 
 while running:
     for event in pygame.event.get():
-        start_traffic_generator()
-        send_start_signal()
+
         if event.type == pygame.QUIT:
             running = False
         elif event.type == show_main_screen_event and on_splash_screen:
