@@ -1,6 +1,8 @@
 import socket
 import random
 import time
+from main import start_game, add_player, send_equipment_code
+
 
 bufferSize  = 1024
 serverAddressPort   = ("127.0.0.1", 7500)
@@ -21,7 +23,7 @@ UDPServerSocketReceive = socket.socket(family=socket.AF_INET, type=socket.SOCK_D
 UDPClientSocketTransmit = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
 # bind server socket
-# UDPServerSocketReceive.bind(serverAddressPort)
+UDPServerSocketReceive.bind(serverAddressPort)
 
 # wait for start from game software
 print ("")
