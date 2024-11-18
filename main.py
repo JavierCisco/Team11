@@ -169,6 +169,7 @@ start_ticks = 0  # tracks when countdown started
 
 def start_game():
     print("Start Game clicked!")
+    send_message_to_server("START")
     global countdown_active, start_ticks
     countdown_active = True  # Start the countdown
     start_ticks = pygame.time.get_ticks()  # Get the current time in milliseconds
@@ -385,7 +386,6 @@ play_action = True
 
 while running:
     for event in pygame.event.get():
-        send_message_to_server("START")
         if event.type == pygame.QUIT:
             running = False
         elif event.type == show_main_screen_event and on_splash_screen:
