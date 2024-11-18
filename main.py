@@ -32,15 +32,15 @@ show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
 # Functions to start the server and client
-def start_server():
-    subprocess.Popen(['python3', 'server.py'])  # Start the UDP server
+# def start_server():
+#     subprocess.Popen(['python3', 'server.py'])  # Start the UDP server
 
-def start_client():
-    subprocess.Popen(['python3', 'client.py'])  # Start the UDP client
+# def start_client():
+#     subprocess.Popen(['python3', 'client.py'])  # Start the UDP client
 
 # Call these functions to start the server and client
-start_server()
-start_client()
+# start_server()
+# start_client()
 
 # UDP setup
 UDP_IP = "127.0.0.1"  # replace with your target IP
@@ -163,7 +163,7 @@ countdown_active = False
 countdown_time = 30  # 30 seconds countdown
 start_ticks = 0  # tracks when countdown started
 def start_traffic_generator():
-    subprocess.Popen(['python3', 'trafficgenerator.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.Popen(['python3', 'python_trafficgenarator_v2.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print("Traffic generator started.")
 
 def start_game():
