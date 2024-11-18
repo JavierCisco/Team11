@@ -221,7 +221,6 @@ countdown_time = 30  # 30 seconds countdown
 start_ticks = 0  # tracks when countdown started
 
 def start_game():
-    send_message("202")
     print("Start Game clicked!")
     global countdown_active, start_ticks
     countdown_active = True  # Start the countdown
@@ -582,6 +581,7 @@ while running:
 
     # game action screen
     elif play_action:
+            send_message("202")
             draw_action_screen()
             game_timer()
 
