@@ -3,8 +3,10 @@ import sys
 import socket
 import random
 import subprocess
-from database import *
 
+import threading
+import time
+from database import *
 from music import Music
 
 # initializing pygame
@@ -27,7 +29,7 @@ try:
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except Exception as error:
-    print("Error in Splash Screen: {error}")
+    print(f"Error in Splash Screen: {error}")
     pygame.quit()
     sys.exit()
 
@@ -36,6 +38,7 @@ music.play_track(start=120)
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
+action_log = []
 # Functions to start the server and client
 def start_SC(file: str):
     subprocess.Popen(['python3', f'{file}.py'])  # Start the UDP server
@@ -44,14 +47,70 @@ start_SC('server')
 start_SC('client')
 
 # UDP setup
-UDP_IP = "127.0.0.1"  # replace with your target IP
-UDP_PORT = 7500       # the port to broadcast equipment codes
-udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# UDP_IP = "127.0.0.1"  # replace with your target IP
+# UDP_PORT = 7500       # the port to broadcast equipment codes
+# udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# Constants for communication
+SERVER = '127.0.0.1'
+BROADCAST_PORT = 7500
+RECEIVE_PORT = 7501
+FORMAT = 'utf-8'
 
 def send_equipment_code(code):
-    message = str(code).encode('utf-8')
-    udp_socket.sendto(message, (UDP_IP, UDP_PORT))
+    message = str(code).encode(FORMAT)
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+        udp_socket.sendto(message, (SERVER, BROADCAST_PORT))
     print(f"Sent equipment code: {code}")
+
+# Function to send messages to the server
+def send_message(message):
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+        udp_socket.sendto(message.encode(FORMAT), (SERVER, BROADCAST_PORT))
+
+# Function to receive messages from the server
+def receive_message():
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+        # udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
+        data, _ = udp_socket.recvfrom(1024)
+        return data.decode(FORMAT)
+    
+# Handle game events received from the server
+def process_game_event(message):
+    global team_scores, action_log
+    if message == "202":
+        print("[GAME STARTED] Starting the game!")
+        action_log.append("Game Started!")
+    elif message == "221":
+        print("[GAME ENDED] Stopping the game.")
+        action_log.append("Game Ended!")
+    elif ":" in message:
+        transmit_id, hit_id = message.split(":")
+        action_log.append(f"Player {transmit_id} hit Player {hit_id}")
+        update_score("Red" if int(transmit_id) % 2 != 0 else "Green", 10)
+    elif message == "43":
+        action_log.append("Green Base Hit! +100 Points")
+        update_score("Green", 100)
+    elif message == "53":
+        action_log.append("Red Base Hit! +100 Points")
+        update_score("Red", 100)
+    else:
+        print(f"[UNKNOWN EVENT] Received: {message}")
+        action_log.append(f"Unknown Event: {message}")
+
+# Update scores for teams
+team_scores = {"Red": 0, "Green": 0}
+
+def update_score(team, points):
+    if team in team_scores:
+        team_scores[team] += points
+        print(f"[SCORE UPDATE] {team} Team: {team_scores[team]} points")
+
+# Thread to listen for updates from the server
+def listen_for_updates():
+    while True:
+        message = receive_message()
+        process_game_event(message)
 
 # TextBox class for table cells
 class TextBox:
@@ -289,9 +348,12 @@ def delete_player():
     print(f'Player {playID} removed!')
 
 def end_game():
+    for _ in range(3):
+        send_message("221")
+        time.sleep(0.1)
     bye_data()	
     pygame.quit()
-    udp_socket.close()
+    # udp_socket.close()
     sys.exit()
 
 game_start_time = pygame.time.get_ticks()
@@ -354,6 +416,7 @@ def game_timer(type: str):
     remaining_time = total_game_time - elapsed_time
     
     global music_started
+    
     if remaining_time > 0:
         minutes = remaining_time // 60
         seconds = remaining_time % 60
@@ -431,6 +494,10 @@ running = True
 on_splash_screen = True
 entry_screen_active = True
 
+# Start the update listener thread
+listener_thread = threading.Thread(target=listen_for_updates, daemon=True)
+listener_thread.start()
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -473,7 +540,6 @@ while running:
     elif start_count:
         entry_screen_active = False
         game_timer('start')        
-
     #########################################################################
     elif action:
         entry_screen_active = not entry_screen_active
@@ -506,7 +572,7 @@ while running:
         #draw columu labels (left)
         label_font = pygame.font.Font(None, 24)
         name_label = label_font.render("ID", True, BLACK)
-        id_label = label_font.render("Name", True, BLACK)
+        id_label = label_font.render("Equipment ID", True, BLACK)
         screen.blit(name_label, (100, 30))
         screen.blit(id_label, (200, 30)) 
         # draw column labels (right)

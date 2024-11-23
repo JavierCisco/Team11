@@ -1,7 +1,6 @@
 import socket
 import random
 import time
-from main import start_game, add_player, send_equipment_code
 
 
 bufferSize  = 1024
