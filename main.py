@@ -26,7 +26,7 @@ try:
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except Exception as error:
-    print("Error in Splash Screen: {error}")
+    print(f"Error in Splash Screen: {error}")
     pygame.quit()
     sys.exit()
 splash_sound.play()
