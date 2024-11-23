@@ -568,7 +568,7 @@ while running:
         #draw columu labels (left)
         label_font = pygame.font.Font(None, 24)
         name_label = label_font.render("ID", True, BLACK)
-        id_label = label_font.render("Name", True, BLACK)
+        id_label = label_font.render("Equipment ID", True, BLACK)
         screen.blit(name_label, (100, 30))
         screen.blit(id_label, (200, 30)) 
         # draw column labels (right)
