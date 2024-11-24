@@ -18,6 +18,7 @@ class Server():
         self.server_broadcast = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.server_thread = threading.Thread(target=self.start)
         self.server_thread.start()
+        self.up_arr = []
 
     def start(self):
         print(f'[LISTENING] Server is listening on {RECEIVE_PORT}')
@@ -97,6 +98,9 @@ class Server():
         # Placeholder for updating points in the game
         print(f'[POINTS UPDATE] Equip ID: {equip_id}, Hit ID: {hit_id}, Points: {points}')
 
+    def points_to_game(self, prev_seg):
+        print('[GAME CALLING FOR POINTS] sending points to game...')
+        return self.up_arr[prev_seg:]
 
 if __name__ == "__main__":
     server = Server()
