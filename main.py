@@ -3,11 +3,12 @@ import sys
 import socket
 import random
 import subprocess
-
 import threading
 import time
 from database import *
 from music import Music
+from server import Server
+
 
 # initializing pygame
 pygame.init()
@@ -366,6 +367,42 @@ def decrement_score(player_name, points):
     print("points recreased")
 
 
+msg_array: list[str] = []
+last_update: int = 0
+
+def gameUpdates():
+    game_msg = []
+    updateArr = Server.points_to_game(last_update)
+    last_update = last_update + len(updateArr)
+
+
+    for update in updateArr:
+        equip_id = update.get('equip_id')
+        hit_id = update.get('hit_id')
+        points = update.get('points')
+        for player in red_team + green_team:
+            if player.equip_id == equip_id:
+                player.score += int(points)
+                shooting_player = player
+            elif player.equip_id == hit_id:
+                shot_player = player
+    
+        msg = ''
+        if points == 10:
+            msg = f'{shooting_player.name} hit {shot_player.name}'
+        elif points == -10:
+            meg = f'{shooting_player.name} hit friendly {shot_player.name}'
+        '''
+        elif points == 100:
+            base_hitters.apped(shooting_player)
+            msg = f'{shooting_player.name} hit '
+            msg += 'Red base' if hit_id == 53 else 'Green base'
+        '''
+        if msg != '':
+            game_msg.append(str(msg))
+    return game_msg
+
+
 def draw_action_screen():
     screen.fill((0, 0, 0))  # Black background
 
@@ -401,7 +438,15 @@ def draw_action_screen():
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
 
-    # Timer logic (Update this part)
+
+    # Display the action log
+    for i, log_entry in enumerate(action_log[-10:]):  # Display the last 10 entries
+        log_text = font_text.render(log_entry, True, WHITE)
+        screen.blit(log_text, (50, 250 + i * 30))
+
+    pygame.display.flip()
+
+    
     
 play_action = True
 music_started = False
@@ -496,6 +541,11 @@ running = True
 on_splash_screen = True
 entry_screen_active = True
 
+# Timer event for updates (e.g., every second)
+GAME_UPDATE_EVENT = pygame.USEREVENT + 2
+pygame.time.set_timer(GAME_UPDATE_EVENT, 1000)  # Trigger every 1000 ms (1 second)
+
+
 # Start the update listener thread
 listener_thread = threading.Thread(target=listen_for_updates, daemon=True)
 listener_thread.start()
@@ -506,6 +556,8 @@ while running:
             running = False
         elif event.type == show_main_screen_event and on_splash_screen:
             on_splash_screen = False
+            new_updates = gameUpdates()
+            action_log.extend(new_updates)
             
         # check for mouse clicks
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -591,3 +643,4 @@ while running:
             game_timer('game')
 
 end_game
+
