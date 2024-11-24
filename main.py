@@ -450,6 +450,7 @@ def game_timer(type: str):
             # You may want to end the game or trigger another action here
         else:
             global start_count, play_action
+            # This is where the white space error was.
             send_message("202")
             start_count = False
             play_action = True
