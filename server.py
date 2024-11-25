@@ -101,7 +101,3 @@ class Server():
     def points_to_game(self, prev_seg):
         print('[GAME CALLING FOR POINTS] sending points to game...')
         return self.up_arr[prev_seg:]
-
-if __name__ == "__main__":
-    server = Server()
-    # server.start_traffic()
