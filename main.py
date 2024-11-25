@@ -13,7 +13,7 @@ from server import Server
 # initializing pygame
 pygame.init()
 pygame.mixer.init()
-
+server = Server()
 music = Music()
 
 # screen dimensions
@@ -368,11 +368,10 @@ def decrement_score(player_name, points):
 
 
 msg_array: list[str] = []
-last_update: int = 0
-
 def gameUpdates():
     game_msg = []
-    updateArr = Server.points_to_game(last_update)
+    last_update = 0
+    updateArr = server.points_to_game(last_update)
     last_update = last_update + len(updateArr)
 
 
@@ -444,6 +443,8 @@ def draw_action_screen():
         log_text = font_text.render(log_entry, True, WHITE)
         screen.blit(log_text, (50, 250 + i * 30))
 
+    #for msg in gameUpdates():
+        #message.add_line(msg)
     pygame.display.flip()
 
     
@@ -643,4 +644,5 @@ while running:
             game_timer('game')
 
 end_game
+
 
