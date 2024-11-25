@@ -3,9 +3,9 @@ import sys
 import socket
 import random
 import subprocess
-
 import threading
 import time
+
 from database import *
 from music import Music
 
@@ -14,6 +14,7 @@ pygame.init()
 pygame.mixer.init()
 
 music = Music()
+entry_screen_active = True
 
 # screen dimensions
 SCREEN_WIDTH = 1000
@@ -209,7 +210,9 @@ class Button:
 
 # button action functions
 def edit_game():
-    print("Edit Game clicked!")
+    global entry_screen_active
+    entry_screen_active = True
+    print("\nEdit Game clicked!: Going back to Entry Screen")
 
 def game_parameters():
     print("Game Parameters clicked!")
@@ -259,35 +262,54 @@ def handle_box_click(row, col):
     selected_col = col
 
 # Function to handle a pop-up screen to enter codename when one is not found
-def prompt_codename(player_id):
+def prompt_codename(player_id, type):
     input_active = True
     codename_textbox = TextBox(300,200,400,40)
-   
-
-    while input_active:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            codename_textbox.handle_event(event)
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    # When Enter is pressed, end the input
-                    codename = codename_textbox.text
-                    input_active = False
-                    if codename:
-                        insert_player(player_id, codename)
+    if type == 'add':
+        while input_active:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                codename_textbox.handle_event(event)
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        # When Enter is pressed, end the input
+                        codename = codename_textbox.text
                         input_active = False
-                        print(f"Codename entered: {codename}")
-                    else:
-                        print("Codename can't be empty")
+                        if codename:
+                            insert_player(player_id, codename)
+                            #input_active = False
+                            print(f"Codename entered: {codename}")
+                        else:
+                            print("Codename can't be empty")
                 
-        screen.fill((255,255,255))
-        font = pygame.font.Font(None, 36)
-        text = font.render(f"Enter Codename for Player ID {player_id}:", True, (0,0,0))
-        screen.blit(text, (300, 150))
-        codename_textbox.draw(screen)
-        pygame.display.update()
+            screen.fill((255,255,255))
+            font = pygame.font.Font(None, 36)
+            text = font.render(f"Enter Codename for Player ID {player_id}:", True, (0,0,0))
+            screen.blit(text, (300, 150))
+            codename_textbox.draw(screen)
+            pygame.display.update()
+    elif type == 'delete':
+        while input_active:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                codename_textbox.handle_event(event)
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        # When Enter is pressed, end the input
+                        playerID = codename_textbox.text
+                        input_active = False
+                        remove_player(playerID)
+                
+            screen.fill((255,255,255))
+            font = pygame.font.Font(None, 36)
+            text = font.render(f"Enter Player ID who you wish to delete:", True, (0,0,0))
+            screen.blit(text, (300, 150))
+            codename_textbox.draw(screen)
+            pygame.display.update()
 
 def add_player():
     global active_table_id
@@ -317,22 +339,14 @@ def add_player():
     code_name = query_codename(player_id)
 
     # If no codename is found, prompt for a new one
-    if not code_name:
+    while not code_name:
         print(f"Codename not found for Player ID: {player_id}")
-        prompt_codename(player_id)  # This will insert the codename into the database if provided
-
-    # Confirm that a codename exists after prompting
-    code_name = query_codename(player_id)
-    if code_name:
-        # Insert the player into the database (for Table 2 as well)
-        insert_player(player_id, code_name)
-
-        print(f"Player added:\nTeam: {team}\nName: {code_name}\nID: {player_id}\nEquipment Code: {equipment_code}")
-
-        # Broadcast the equipment code via UDP
-        send_equipment_code(equipment_code)
-    else:
-        print("No codename entered; player was not added.")
+        prompt_codename(player_id, 'add')  # This will insert the codename into the database if provided
+        code_name = query_codename(player_id)	    # Confirm that a codename exists after prompting
+    
+    print(f"Player added:\nTeam: {team}\nName: {code_name}\nID: {player_id}\nEquipment Code: {equipment_code}")
+    # Broadcast the equipment code via UDP
+    send_equipment_code(equipment_code)
     add_player_to_team(team, code_name, score=0)
 
 def add_player_to_team(team, player_name, score=0):
@@ -343,9 +357,8 @@ def add_player_to_team(team, player_name, score=0):
     
 
 def delete_player():
-    playID = input('ID of player to remove?:')
-    remove_player(playID)
-    print(f'Player {playID} removed!')
+    prompt_codename(0, 'delete')
+    print(f'Player removed!')
 
 def end_game():
     for _ in range(3):
@@ -365,23 +378,20 @@ def increment_score(player_name, points):
 def decrement_score(player_name, points):
     print("points recreased")
 
-
+# action screen code
 def draw_action_screen():
     screen.fill((0, 0, 0))  # Black background
-
     # Fonts
     font_title = pygame.font.Font(None, 48)
     font_text = pygame.font.Font(None, 36)
-  
     # Colors
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
     BLUE = (0, 0, 255)
     WHITE = (255, 255, 255)
-
     # Draw the current scores header
-    current_scores_header = font_title.render("Current Scores", True, BLUE)
-    screen.blit(current_scores_header, (750, 20))
+    
+    screen.blit(font_title.render("Current Scores", True, BLUE), (0, 20))
 
     # Draw Red Team scores
     red_team_header = font_text.render("Red Team", True, RED)
@@ -457,7 +467,6 @@ def game_timer(type: str):
             init_timer(6)
 
 def test_func():
-# usable with 't' for now just used to view table players
     view_database()
 
 button_width = 100  # width 
@@ -466,14 +475,15 @@ button_margin = 10  # margin
 y_position = SCREEN_HEIGHT - button_height - 80  # Y-position
 
 buttons = [
-    Button("F1\nEdit Game", button_margin + 0 * (button_width + button_margin), y_position, button_width, button_height, edit_game),
-    Button("F2\nGame\nParameters", button_margin + 1 * (button_width + button_margin), y_position, button_width, button_height, game_parameters),
-    Button("F3\nStart Game", button_margin + 2 * (button_width + button_margin), y_position, button_width, button_height, start_game),
-    Button("F5\nAction Screen", button_margin + 3 * (button_width + button_margin), y_position, button_width, button_height, pre_entered_games),
+    Button("F1\nEntry Screen", button_margin + 0 * (button_width + button_margin), y_position, button_width, button_height, edit_game),
+    Button("F3\nStart Game", button_margin + 1 * (button_width + button_margin), y_position, button_width, button_height, start_game),
+    Button("F5\nAction Screen", button_margin + 2 * (button_width + button_margin), y_position, button_width, button_height, pre_entered_games),
+    Button("F6\nDelete\nPlayer", button_margin + 3 * (button_width + button_margin), y_position, button_width, button_height, delete_player),
     Button("F7\nAdd\nPlayer", button_margin + 4 * (button_width + button_margin), y_position, button_width, button_height, add_player),
     Button("F8\nView Game", button_margin + 5 * (button_width + button_margin), y_position, button_width, button_height, view_game),
     Button("F10\nFlick Sync", button_margin + 6 * (button_width + button_margin), y_position, button_width, button_height, flick_sync),
-    Button("F12\nClear Game", button_margin + 7 * (button_width + button_margin), y_position, button_width, button_height, clear_game),
+    Button("F11\nView\nDatabase", button_margin + 7 * (button_width + button_margin), y_position, button_width, button_height, test_func),
+    Button("F12\nClear Game", button_margin + 8 * (button_width + button_margin), y_position, button_width, button_height, clear_game),
 ]
 
 # dictionary to map keys to actions
@@ -482,19 +492,19 @@ key_to_action = {
     pygame.K_F2: game_parameters,
     pygame.K_F3: start_game,
     pygame.K_F5: pre_entered_games,
+    pygame.K_F6: delete_player,
     pygame.K_F7: add_player,  # no action assigned for F7 yet
     pygame.K_F8: view_game,
     pygame.K_F10: flick_sync,
+    pygame.K_F11: test_func,
     pygame.K_F12: clear_game,
-    #pygame.K_BACKSPACE: delete_player,
-    pygame.K_ESCAPE: end_game,
-    pygame.K_F6: test_func
+    pygame.K_ESCAPE: end_game
 }
 
 # main loop
 running = True
 on_splash_screen = True
-entry_screen_active = True
+
 
 # Start the update listener thread
 listener_thread = threading.Thread(target=listen_for_updates, daemon=True)
@@ -558,10 +568,10 @@ while running:
         WHITE = (255,255,255)
         pygame.display.set_caption("Entry Terminal")
         font = pygame.font.Font(None, 36)
-        text = font.render("Edit Current Game",True, BLACK)
+        text = font.render("Entry Screen",True, BLACK)
         screen.blit(text, (280, 0))
-        pygame.draw.rect(screen, BLACK, pygame.Rect(0, 550, 800, 40))
-        text = font.render("<Del> to Delete Player, <i> to Insert Player or Edit Codename", True, WHITE)
+        pygame.draw.rect(screen, BLACK, pygame.Rect(0, 550, 900, 40))
+        text = font.render("Cick [F6] to Delete Player, [F7] to insert player from selected text box", True, WHITE)
         screen.blit(text, (50,560))
         ##################################################
         
@@ -573,11 +583,16 @@ while running:
                     
         #draw columu labels (left)
         label_font = pygame.font.Font(None, 24)
-        name_label = label_font.render("ID", True, BLACK)
+        name_label = label_font.render("Player ID", True, BLACK)
         id_label = label_font.render("Equipment ID", True, BLACK)
+        red_label = label_font.render('RED TEAM', True, BLACK)
+        green_label = label_font.render("GREEN TEAM", True, BLACK)
+        
+        screen.blit(red_label, (0, 30))
         screen.blit(name_label, (100, 30))
         screen.blit(id_label, (200, 30)) 
         # draw column labels (right)
+        screen.blit(green_label, (700, 30))
         screen.blit(name_label, (450, 30)) 
         screen.blit(id_label, (550, 30))
                     
