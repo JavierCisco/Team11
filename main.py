@@ -74,13 +74,17 @@ def receive_message():
 # Handle game events received from the server
 def process_game_event(message):
     global team_scores, action_log
+    print("process game event function is being called")
     if message == "202":
+        print("PGE message 202")
         print("[GAME STARTED] Starting the game!")
         action_log.append("Game Started!")
     elif message == "221":
+        print("PGE message 221")
         print("[GAME ENDED] Stopping the game.")
         action_log.append("Game Ended!")
     elif ":" in message:
+        print("PGE message int:int")
         transmitter, hit_player = message.split(":")
         transmitter = int(transmitter)
         hit_player = int(hit_player)
