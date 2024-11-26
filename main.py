@@ -45,7 +45,8 @@ def start_SC(file: str):
     subprocess.Popen(['python3', f'{file}.py'])  # Start the UDP server
 # Call this functions to start the server and client
 start_SC('server')
-start_SC('client')
+# start_SC('client')
+# Client file not needed. Main.py is the client
 
 
 # Constants for communication
@@ -77,7 +78,7 @@ def send_message(message):
 # Function to receive messages from the server
 def receive_message():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-        # udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
+        udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
         data, _ = udp_socket.recvfrom(1024)
         return data.decode(FORMAT)
 
@@ -92,14 +93,25 @@ def process_game_event(message):
         action_log.append("Game Ended!")
     elif ":" in message:
         transmit_id, hit_id = message.split(":")
-        action_log.append(f"Player {transmit_id} hit Player {hit_id}")
-        update_score("Red" if int(transmit_id) % 2 != 0 else "Green", 10)
+        transmitter = int(transmitter)
+        hit_player = int(hit_player)
+
+        if transmitter % 2 == hit_player % 2:  # Friendly fire
+            update_score("Red" if transmitter % 2 != 0 else "Green", -10)
+            action_log.append(f"Player {transmitter} (Friendly Fire) hit Player {hit_player}")
+        else:  # Opponent hit
+            update_score("Red" if transmitter % 2 != 0 else "Green", 10)
+            action_log.append(f"Player {transmitter} hit Player {hit_player}")
+
+        # Update UI dynamically
+        draw_action_screen()
+        pygame.display.update()
     elif message == "43":
         action_log.append("Green Base Hit! +100 Points")
-        update_score("Green", 100)
+        update_score("Red", 100)
     elif message == "53":
         action_log.append("Red Base Hit! +100 Points")
-        update_score("Red", 100)
+        update_score("Green", 100)
     else:
         print(f"[UNKNOWN EVENT] Received: {message}")
         action_log.append(f"Unknown Event: {message}")
