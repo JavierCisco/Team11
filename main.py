@@ -66,11 +66,17 @@ def send_message(message):
 
 # Function to receive messages from the server
 def receive_message():
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-        udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
-        print("[DEBUG] Listening for messages...")
-        data, _ = udp_socket.recvfrom(1024)
-        return data.decode(FORMAT)
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+            udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Allow reuse
+            udp_socket.bind(('127.0.0.1', RECEIVE_PORT))  # Ensure it binds to port 7501
+            print("[DEBUG] Waiting for messages...")
+            data, _ = udp_socket.recvfrom(1024)
+            print(f"[DEBUG] Received data: {data.decode(FORMAT)}")
+            return data.decode(FORMAT)
+    except Exception as e:
+        print(f"[ERROR] receive_message encountered an error: {e}")
+        raise
     
 # Handle game events received from the server
 def process_game_event(message):
