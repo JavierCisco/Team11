@@ -65,12 +65,26 @@ def send_message(message):
         udp_socket.sendto(message.encode(FORMAT), (SERVER, BROADCAST_PORT))
 
 # Function to receive messages from the server
+# def receive_message():
+#     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+#         udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
+#         print("[DEBUG] Listening for messages...")
+#         data, _ = udp_socket.recvfrom(1024)
+#         return data.decode(FORMAT)
+        
 def receive_message():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+        udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
-        print("[DEBUG] Listening for messages...")
-        data, _ = udp_socket.recvfrom(1024)
-        return data.decode(FORMAT)
+        udp_socket.settimeout(5)  # Timeout after 5 seconds
+        try:
+            print("[DEBUG] Listening for messages...")
+            data, _ = udp_socket.recvfrom(1024)
+            print(f"[DEBUG] Received data: {data.decode(FORMAT)}")
+            return data.decode(FORMAT)
+        except socket.timeout:
+            print("[DEBUG] No message received (timeout).")
+            return None
     
 # Handle game events received from the server
 def process_game_event(message):
