@@ -47,6 +47,8 @@ class Server():
     def handle_client(self, msg: str):
         if ":" in msg:
             transmitter, hit_id = map(int, msg.split(":"))
+            response = f"Ack:{transmitter}:{hit_id}"
+            self.server_broadcast.sendto(response.encode(FORMAT), BROADCAST_ADDR)
             team = "Red" if transmitter % 2 != 0 else "Green"
             if transmitter % 2 == hit_id % 2:  # Friendly fire
                 points = -10
