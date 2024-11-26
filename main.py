@@ -443,10 +443,10 @@ def draw_action_screen():
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
     for i, log_entry in enumerate(action_log[-10:]):  # Last 10 entries
-        print(f"[DEBUG] Drawing log_entry: {log_entry}")  # Debug each entry
+        # print(f"[DEBUG] Drawing log_entry: {log_entry}")  # Debug each entry
         log_text = font_text.render(log_entry, True, (255, 255, 255))  # White text
         screen.blit(log_text, (50, 200 + i * 30))  # Adjust vertical spacing
-    pygame.display.update()
+    # pygame.display.update()
 
     # Timer logic (Update this part)
     
