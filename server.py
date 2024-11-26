@@ -50,49 +50,49 @@ class Server():
         self.server_broadcast.close()
         print('[CLOSED] Broadcast socket successfully closed.')
 
-    # def handle_client(self, msg: str):
-    #     if ":" in msg:
-    #         transmitter, hit_id = map(int, msg.split(":"))
-    #         team = "Red" if transmitter % 2 != 0 else "Green"
-    #         if transmitter % 2 == hit_id % 2:  # Friendly fire
-    #             points = -10
-    #             broadcast_msg = str(transmitter)
-    #         else:  # Opponent hit
-    #             points = 10
-    #             broadcast_msg = str(hit_id)
-    #         self.update_points(transmitter, hit_id, points)
-    #         self.server_broadcast.sendto(broadcast_msg.encode(FORMAT), BROADCAST_ADDR)
-    #     elif msg == "43":  # Green Base Hit
-    #         print("Message 43 received")
-    #         self.update_points(None, None, 100)
-    #     elif msg == "53":  # Red Base Hit
-    #         print("Message 43 received")
-    #         self.update_points(None, None, 100)
-    #     else:
-    #         print(f'[UNHANDLED MESSAGE] {msg}')
-        
-    def handle_client(self, msg: str, addr):
-        print(f"[DEBUG] Processing message from {addr}: {msg}")
-        
-        if ":" in msg:  # Player hit event
+   def handle_client(self, msg: str):
+        if ":" in msg:
             transmitter, hit_id = map(int, msg.split(":"))
-            print(f"[HIT EVENT] Transmitter: {transmitter}, Hit ID: {hit_id}")
-            
-            # Acknowledge the hit event
-            response = f"Ack:{transmitter}:{hit_id}"
-            self.server_broadcast.sendto(response.encode(FORMAT), addr)
-            print(f"[DEBUG] Acknowledgment sent: {response}")
-        
-        elif msg == "202":  # Game Start
-            print("[DEBUG] Game Start message processed.")
-            self.server_broadcast.sendto("Game Started".encode(FORMAT), addr)
-        
-        elif msg == "221":  # Game End
-            print("[DEBUG] Game End message processed.")
-        
+            team = "Red" if transmitter % 2 != 0 else "Green"
+            if transmitter % 2 == hit_id % 2:  # Friendly fire
+                points = -10
+                broadcast_msg = str(transmitter)
+            else:  # Opponent hit
+                points = 10
+                broadcast_msg = str(hit_id)
+            self.update_points(transmitter, hit_id, points)
+            self.server_broadcast.sendto(broadcast_msg.encode(FORMAT), BROADCAST_ADDR)
+        elif msg == "43":  # Green Base Hit
+            print("Message 43 received")
+            self.update_points(None, None, 100)
+        elif msg == "53":  # Red Base Hit
+            print("Message 53 received")
+            self.update_points(None, None, 100)
         else:
-            print(f"[DEBUG] Unrecognized message: {msg}")
-            self.server_broadcast.sendto(f"Unrecognized:{msg}".encode(FORMAT), addr)
+            print(f'[UNHANDLED MESSAGE] {msg}')
+        
+    # def handle_client(self, msg: str, BROADCAST_ADDR):
+    #     print(f"[DEBUG] Processing message from {BROADCAST_ADDR}: {msg}")
+        
+    #     if ":" in msg:  # Player hit event
+    #         transmitter, hit_id = map(int, msg.split(":"))
+    #         print(f"[HIT EVENT] Transmitter: {transmitter}, Hit ID: {hit_id}")
+            
+    #         # Acknowledge the hit event
+    #         response = f"Ack:{transmitter}:{hit_id}"
+    #         self.server_broadcast.sendto(response.encode(FORMAT), BROADCAST_ADDR)
+    #         print(f"[DEBUG] Acknowledgment sent: {response}")
+        
+    #     elif msg == "202":  # Game Start
+    #         print("[DEBUG] Game Start message processed.")
+    #         self.server_broadcast.sendto("Game Started".encode(FORMAT), BROADCAST_ADDR)
+        
+    #     elif msg == "221":  # Game End
+    #         print("[DEBUG] Game End message processed.")
+        
+    #     else:
+    #         print(f"[DEBUG] Unrecognized message: {msg}")
+    #         self.server_broadcast.sendto(f"Unrecognized:{msg}".encode(FORMAT), BROADCAST_ADDR)
 
 
         def update_points(self, equip_id: int, hit_id: int, points: int):
