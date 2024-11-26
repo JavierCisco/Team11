@@ -92,6 +92,7 @@ def receive_message():
             print("[DEBUG] Listening for messages...")
             data, _ = udp_socket.recvfrom(1024)
             print(f"[DEBUG] Received data: {data.decode(FORMAT)}")
+            process_game_event(data.decode(FORMAT))
             return data.decode(FORMAT)
         except socket.timeout:
             print("[DEBUG] No message received (timeout).")
@@ -121,6 +122,10 @@ def process_game_event(message):
         else:  # Opponent hit
             update_score("Red" if transmitter % 2 != 0 else "Green", 10)
             action_log.append(f"Player {transmitter} hit Player {hit_player}")
+
+        # Update UI dynamically
+        draw_action_screen()
+        pygame.display.update()
     elif message == "43":
         action_log.append("Green Base Hit! +100 Points")
         update_score("Red", 100)
@@ -130,9 +135,6 @@ def process_game_event(message):
     else:
         print(f"[UNKNOWN EVENT] Received: {message}")
         action_log.append(f"Unknown Event: {message}")
-    # Update UI dynamically
-    draw_action_screen()
-    pygame.display.update()
     
 # Update scores for teams
 team_scores = {"Red": 0, "Green": 0}
@@ -445,10 +447,8 @@ def draw_action_screen():
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
     for i, log_entry in enumerate(action_log[-10:]):  # Last 10 entries
-        # print(f"[DEBUG] Drawing log_entry: {log_entry}")  # Debug each entry
-        log_text = font_text.render(log_entry, True, (255, 255, 255))  # White text
-        screen.blit(log_text, (50, 200 + i * 30))  # Adjust vertical spacing
-    # pygame.display.update()
+        log_text = font_text.render(log_entry, True, WHITE)
+        screen.blit(log_text, (50, 300 + i * 30))  # Adjust vertical spacing
 
     
 play_action = True
