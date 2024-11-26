@@ -10,9 +10,6 @@ SERVER = '127.0.0.1'
 RECEIVE_ADDR = (SERVER, RECEIVE_PORT)
 BROADCAST_ADDR = (SERVER, BROADCAST_PORT)
 
-# ACTION_LOG = ['testing', 'pls', 'work', 'i', 'beg', 'still', 'work']
-
-
 class Server():
     def __init__(self):
         # Initialize sockets for receiving and broadcasting
@@ -102,3 +99,4 @@ class Server():
 
 if __name__ == "__main__":
     server = Server()
+# There is no indentation error
