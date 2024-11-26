@@ -10,6 +10,9 @@ SERVER = '127.0.0.1'
 RECEIVE_ADDR = (SERVER, RECEIVE_PORT)
 BROADCAST_ADDR = (SERVER, BROADCAST_PORT)
 
+# ACTION_LOG = ['testing', 'pls', 'work', 'i', 'beg', 'still', 'work']
+
+
 class Server():
     def __init__(self):
         # Initialize sockets for receiving and broadcasting
@@ -35,6 +38,7 @@ class Server():
     def start_traffic(self):
         # Start the game by broadcasting code 202
         print('[BROADCASTING] Starting game with code 202')
+        ACTION_LOG.append('[BROADCASTING] Starting game with code 202')
         self.server_broadcast.sendto("202".encode(FORMAT), BROADCAST_ADDR)
 
     def stop(self):
@@ -89,6 +93,7 @@ class Server():
         else:
             print(f"[DEBUG] Unrecognized message: {msg}")
             self.server_broadcast.sendto(f"Unrecognized:{msg}".encode(FORMAT), addr)
+
 
         def update_points(self, equip_id: int, hit_id: int, points: int):
             # Placeholder for updating points in the game
