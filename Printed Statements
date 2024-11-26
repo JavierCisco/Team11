@@ -14,3 +14,8 @@ PGE message int:int
 [DEBUG] Drawing log_entry: Player 3 hit Player 2
 [DEBUG] Drawing log_entry: Player 3 hit Player 2
 [DEBUG] Drawing log_entry: Player 3 hit Player 2
+
+
+ if (oldMessage != server.MESSAGE):
+        ^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'oldMessage' where it is not associated with a value
