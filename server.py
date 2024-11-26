@@ -45,21 +45,25 @@ class Server():
         self.server_broadcast.close()
 
     def handle_client(self, msg: str):
-        print(f'[DEBUG] Received message: {msg}')
-        if ':' in msg:
-            parts = msg.split(':')
-            if len(parts) == 2:
-                transmit_id, hit_id = parts
-                print(f'[HIT EVENT] Transmit ID: {transmit_id}, Hit ID: {hit_id}')
-                self.send_hit_id(transmit_id, hit_id)
-            else:
-                print(f'[ERROR] Malformed message. Expected "player_id:hit_id", got: {msg}')
-        elif msg.isdigit():
-            print(f'[SINGLE ID RECEIVED] Message: {msg}')
-            # Handle single ID messages if needed
-            self.server_broadcast.sendto(msg.encode(FORMAT), BROADCAST_ADDR)
+        if ":" in msg:
+            transmitter, hit_id = map(int, msg.split(":"))
+            team = "Red" if transmitter % 2 != 0 else "Green"
+            if transmitter % 2 == hit_id % 2:  # Friendly fire
+                points = -10
+                broadcast_msg = str(transmitter)
+            else:  # Opponent hit
+                points = 10
+                broadcast_msg = str(hit_id)
+            self.update_points(transmitter, hit_id, points)
+            self.server_broadcast.sendto(broadcast_msg.encode(FORMAT), BROADCAST_ADDR)
+        elif msg == "43":  # Green Base Hit
+            print("Message 43 received")
+            self.update_points(None, None, 100)
+        elif msg == "53":  # Red Base Hit
+            print("Message 43 received")
+            self.update_points(None, None, 100)
         else:
-            print(f'[ERROR] Unrecognized message format: {msg}')
+            print(f'[UNHANDLED MESSAGE] {msg}')
 
     def send_hit_id(self, equip_id_str: str, hit_id_str: str):
         # Handle hit events and update points accordingly
@@ -100,4 +104,3 @@ class Server():
 
 if __name__ == "__main__":
     server = Server()
-    # server.start_traffic()
