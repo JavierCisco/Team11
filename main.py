@@ -120,10 +120,11 @@ def update_score(team, points):
 
 # Thread to listen for updates from the server
 def listen_for_updates():
-    print("[DEBUG] Listener thread running...")
+    print("[DEBUG] Listener function running...")
     while True:
         try:
             message = receive_message()
+            print("Is the try in listenForUpdates working?")
             if message:
                 print(f"[DEBUG] Processing message: {message}")
                 process_game_event(message)
@@ -530,6 +531,7 @@ on_splash_screen = True
 # Start the update listener thread
 listener_thread = threading.Thread(target=listen_for_updates, daemon=True)
 listener_thread.start()
+print("Starting listener thread")
 
 while running:
     for event in pygame.event.get():
