@@ -6,7 +6,6 @@ import subprocess
 import threading
 import time
 
-
 from database import *
 from music import Music
 
@@ -16,7 +15,7 @@ pygame.mixer.init()
 
 music = Music()
 entry_screen_active = True
-
+scores = {}
 # screen dimensions
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
@@ -41,7 +40,6 @@ show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
 action_log = []
-
 # Functions to start the server and client
 def start_SC(file: str):
     subprocess.Popen(['python3', f'{file}.py'])  # Start the UDP server
@@ -55,15 +53,6 @@ BROADCAST_PORT = 7500
 RECEIVE_PORT = 7501
 FORMAT = 'utf-8'
 
-def end_game():
-    for _ in range(3):
-        send_message("221")
-        time.sleep(0.1)
-    bye_data()	
-    pygame.quit()
-    # udp_socket.close()
-    sys.exit()
-
 def send_equipment_code(code):
     message = str(code).encode(FORMAT)
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
@@ -76,28 +65,13 @@ def send_message(message):
         udp_socket.sendto(message.encode(FORMAT), (SERVER, BROADCAST_PORT))
 
 # Function to receive messages from the server
-# def receive_message():
-#     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-#         udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
-#         print("[DEBUG] Listening for messages...")
-#         data, _ = udp_socket.recvfrom(1024)
-#         return data.decode(FORMAT)
-        
 def receive_message():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-        udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
-        udp_socket.settimeout(5)  # Timeout after 5 seconds
-        try:
-            print("[DEBUG] Listening for messages...")
-            data, _ = udp_socket.recvfrom(1024)
-            print(f"[DEBUG] Received data: {data.decode(FORMAT)}")
-            process_game_event(data.decode(FORMAT))
-            return data.decode(FORMAT)
-        except socket.timeout:
-            print("[DEBUG] No message received (timeout).")
-            return None
-
+        print("[DEBUG] Listening for messages...")
+        data, _ = udp_socket.recvfrom(1024)
+        return data.decode(FORMAT)
+    
 # Handle game events received from the server
 def process_game_event(message):
     global team_scores, action_log
@@ -135,7 +109,7 @@ def process_game_event(message):
     else:
         print(f"[UNKNOWN EVENT] Received: {message}")
         action_log.append(f"Unknown Event: {message}")
-    
+
 # Update scores for teams
 team_scores = {"Red": 0, "Green": 0}
 
@@ -149,7 +123,6 @@ def listen_for_updates():
     print("[DEBUG] Listener thread running...")
     while True:
         try:
-            print("try block activated in listenForUpdates")
             message = receive_message()
             if message:
                 print(f"[DEBUG] Processing message: {message}")
@@ -313,7 +286,8 @@ def prompt_codename(player_id, type):
         while input_active:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    end_game
+                    pygame.quit()
+                    sys.exit()
                 codename_textbox.handle_event(event)
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
@@ -403,7 +377,14 @@ def delete_player():
     prompt_codename(0, 'delete')
     print(f'Player removed!')
 
-
+def end_game():
+    for _ in range(3):
+        send_message("221")
+        time.sleep(0.1)
+    bye_data()	
+    pygame.quit()
+    # udp_socket.close()
+    sys.exit()
 
 game_start_time = pygame.time.get_ticks()
 game_time = pygame.time.get_ticks()
@@ -412,48 +393,69 @@ total_game_time = 0
 def increment_score(player_name, points):
     print('points added')
 def decrement_score(player_name, points):
-    print("points decreased")
+    print("points recreased")
 
 # action screen code
+#########################
 def draw_action_screen():
+    global scores
+    global red_team, green_team, action_log
+    red_team = [(player, score) for player, score in scores.get("Red", {}).items()]
+    green_team = [(player, score) for player, score in scores.get("Green", {}).items()]
+#    for team, players in scores.items():
+#        if team == "Red":
+#            red_team = [(player, score) for player, score in players.items()]
+#        elif team == "Green":
+#            green_team = [(player, score) for player, score in players.items()]
     screen.fill((0, 0, 0))  # Black background
+
     # Fonts
     font_title = pygame.font.Font(None, 48)
     font_text = pygame.font.Font(None, 36)
+
     # Colors
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
     BLUE = (0, 0, 255)
     WHITE = (255, 255, 255)
-        
+    scores_y = 20
+    team_y = 30
+    screen_width, screen_height = screen.get_size()
+    center_x = screen_width // 2
+
     # Draw the current scores header
-    screen.blit(font_title.render("Current Scores", True, BLUE), (700, 20))
+    #screen.blit(font_title.render("Score", True, BLUE), (10, scores_y))
 
     # Draw Red Team scores
     red_team_header = font_text.render("Red Team", True, RED)
-    screen.blit(red_team_header, (50, 20))
+    screen.blit(font_title.render("Red Team", True, RED), (200, team_y))
     for i, (player, score) in enumerate(red_team):
         player_text = font_text.render(f"{player}: {score}", True, WHITE)
-        screen.blit(player_text, (50, 60 + i * 30))
+        screen.blit(player_text, (90, 100 + i * 30))
 
     # Draw Green Team scores
     green_team_header = font_text.render("Green Team", True, GREEN)
-    screen.blit(green_team_header, (500, 20))
+    screen.blit(font_title.render("Green Team", True, GREEN), (center_x + 150, 30))
     for i, (player, score) in enumerate(green_team):
         player_text = font_text.render(f"{player}: {score}", True, WHITE)
-        screen.blit(player_text, (500, 60 + i * 30))
+        screen.blit(player_text, (center_x + 150, team_y + 70 + i * 30))
 
     # Draw the action log header
+    action_log_start_y = screen_height // 2 + 50
     action_header = font_title.render("Current Game Action", True, BLUE)
-    screen.blit(action_header, (50, 200))
     for i, log_entry in enumerate(action_log[-10:]):  # Last 10 entries
         log_text = font_text.render(log_entry, True, WHITE)
-        screen.blit(log_text, (50, 300 + i * 30))  # Adjust vertical spacing
+        screen.blit(log_text, (10, screen_height // 2 + 50 + i * 30))
+        #screen.blit(log_text, (850, 80 + i * 30))
+        screen.blit(log_text, (10, action_log_start_y + i * 30))
+    pygame.draw.line(screen, WHITE, (center_x, 0), (center_x, screen_height // 2), 2)
+    pygame.draw.line(screen, WHITE, (0, screen_height // 2), (screen_width, screen_height // 2), 2)
+    screen.blit(font_title.render("Current Game Action", True, BLUE), (10, screen_height // 2 + 10))
+    pygame.display.update()  # Refresh the screen
 
-    
-play_action = True
-music_started = False
-
+    play_action = True
+    music_started = False
+#############################
 def init_timer(minutes):
 	global game_start_time, total_game_time
 	game_start_time = pygame.time.get_ticks()
@@ -462,17 +464,20 @@ def init_timer(minutes):
 def game_timer(type: str):
     elapsed_time = (pygame.time.get_ticks() - game_start_time) // 1000  # Elapsed time in seconds
     remaining_time = total_game_time - elapsed_time
-    
     global music_started
+    music_started = False
     
     if remaining_time > 0:
         minutes = remaining_time // 60
         seconds = remaining_time % 60
         timer_text = f"{minutes:02}:{seconds:02}"
-    elif remaining_time == 16:
+    elif remaining_time <= 16:
+        if not music_started:
             music.stop_track()
             music.load_track("Track08.mp3")  # Track to play at 8 seconds
             music.play_track(start=0)
+            music_started = True
+        timer_text = "00:16"
     else:
         timer_text = "00:00"  # Show "00:00" when time is up
 
@@ -543,6 +548,9 @@ key_to_action = {
 running = True
 on_splash_screen = True
 
+# Start the update listener thread
+listener_thread = threading.Thread(target=listen_for_updates, daemon=True)
+listener_thread.start()
 
 while running:
     for event in pygame.event.get():
@@ -563,6 +571,7 @@ while running:
                         if clicked is not None:
                             active_table_id, row, col = clicked
                             handle_box_click(row, col)
+                            # text_box.active = True
                 
         # check for keypress events
         elif event.type == pygame.KEYDOWN:
@@ -603,9 +612,9 @@ while running:
         font = pygame.font.Font(None, 36)
         text = font.render("Entry Screen",True, BLACK)
         screen.blit(text, (280, 0))
-        pygame.draw.rect(screen, BLACK, pygame.Rect(50, 550, 900, 40))
-        text = font.render("Click [F6] to Delete Player, [F7] to insert player from selected text box", True, WHITE)
-        screen.blit(text, (100,560))
+        pygame.draw.rect(screen, BLACK, pygame.Rect(0, 550, 900, 40))
+        text = font.render("Cick [F6] to Delete Player, [F7] to insert player from selected text box", True, WHITE)
+        screen.blit(text, (50,560))
         ##################################################
         
         # Draw the tables
@@ -614,7 +623,7 @@ while running:
                 for text_box in row:
                     text_box.draw(screen)
                     
-        #draw columu labels
+        #draw columu labels (left)
         label_font = pygame.font.Font(None, 24)
         name_label = label_font.render("Player ID", True, BLACK)
         id_label = label_font.render("Equipment ID", True, BLACK)
