@@ -398,9 +398,7 @@ def draw_action_screen():
     GREEN = (0, 255, 0)
     BLUE = (0, 0, 255)
     WHITE = (255, 255, 255)
-    
-    from server import ACTION_LOG
-    
+        
     # Draw the current scores header
     screen.blit(font_title.render("Current Scores", True, BLUE), (700, 20))
 
@@ -421,12 +419,6 @@ def draw_action_screen():
     # Draw the action log header
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
-    recent_action = ACTION_LOG[-5:]
-    y_spacing = 0
-    for action in recent_action:
-        action_text = font_text.render(f'{action}', True, WHITE)
-        screen.blit(action_text, (50, 300 + y_spacing))
-        y_spacing += action_text.get_height() + 10
     
 play_action = True
 music_started = False
