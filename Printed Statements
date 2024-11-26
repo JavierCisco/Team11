@@ -1,0 +1,28 @@
+[RECEIVED] Data from ('127.0.0.1', 56771): 1:3
+[POINTS UPDATE] Equip ID: 1, Hit ID: 3, Points: -10
+[RECEIVED] Data from ('127.0.0.1', 56771): 3:2
+[POINTS UPDATE] Equip ID: 3, Hit ID: 2, Points: 10
+[RECEIVED] Data from ('127.0.0.1', 56771): 3:1
+[POINTS UPDATE] Equip ID: 3, Hit ID: 1, Points: -10
+[RECEIVED] Data from ('127.0.0.1', 56771): 3:1
+[POINTS UPDATE] Equip ID: 3, Hit ID: 1, Points: -10
+[RECEIVED] Data from ('127.0.0.1', 56771): 2:4
+[POINTS UPDATE] Equip ID: 2, Hit ID: 4, Points: -10
+[RECEIVED] Data from ('127.0.0.1', 56771): 4:1
+[POINTS UPDATE] Equip ID: 4, Hit ID: 1, Points: 10
+[RECEIVED] Data from ('127.0.0.1', 56771): 2:3
+[POINTS UPDATE] Equip ID: 2, Hit ID: 3, Points: 10
+[RECEIVED] Data from ('127.0.0.1', 56771): 2:3
+[POINTS UPDATE] Equip ID: 2, Hit ID: 3, Points: 10
+[RECEIVED] Data from ('127.0.0.1', 56771): 3:2
+[POINTS UPDATE] Equip ID: 3, Hit ID: 2, Points: 10
+[RECEIVED] Data from ('127.0.0.1', 56771): 3:2
+[POINTS UPDATE] Equip ID: 3, Hit ID: 2, Points: 10
+[RECEIVED] Data from ('127.0.0.1', 56771): 1:43
+[POINTS UPDATE] Equip ID: 1, Hit ID: 43, Points: -10
+[RECEIVED] Data from ('127.0.0.1', 56771): 4:1
+[POINTS UPDATE] Equip ID: 4, Hit ID: 1, Points: 10
+[RECEIVED] Data from ('127.0.0.1', 56771): 4:2
+[POINTS UPDATE] Equip ID: 4, Hit ID: 2, Points: -10
+[RECEIVED] Data from ('127.0.0.1', 56771): 3:1
+[POINTS UPDATE] Equip ID: 3, Hit ID: 1, Points: -10
