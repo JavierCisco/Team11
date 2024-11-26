@@ -81,6 +81,7 @@ def receive_message():
             print("[DEBUG] Listening for messages...")
             data, _ = udp_socket.recvfrom(1024)
             print(f"[DEBUG] Received data: {data.decode(FORMAT)}")
+            process_game_event(data.decode(FORMAT))
             return data.decode(FORMAT)
         except socket.timeout:
             print("[DEBUG] No message received (timeout).")
@@ -423,7 +424,7 @@ def draw_action_screen():
     WHITE = (255, 255, 255)
     # Draw the current scores header
     
-    screen.blit(font_title.render("Current Scores", True, BLUE), (0, 20))
+    screen.blit(font_title.render("Current Scores", True, BLUE), (700, 20))
 
     # Draw Red Team scores
     red_team_header = font_text.render("Red Team", True, RED)
@@ -443,12 +444,8 @@ def draw_action_screen():
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
     for i, log_entry in enumerate(action_log[-10:]):  # Last 10 entries
-        # print(f"[DEBUG] Drawing log_entry: {log_entry}")  # Debug each entry
-        log_text = font_text.render(log_entry, True, (255, 255, 255))  # White text
-        screen.blit(log_text, (50, 200 + i * 30))  # Adjust vertical spacing
-    # pygame.display.update()
-
-    # Timer logic (Update this part)
+        log_text = font_text.render(log_entry, True, WHITE)
+        screen.blit(log_text, (50, 300 + i * 30))  # Adjust vertical spacing
     
 play_action = True
 music_started = False
@@ -542,10 +539,6 @@ key_to_action = {
 running = True
 on_splash_screen = True
 
-# Start the update listener thread
-listener_thread = threading.Thread(target=listen_for_updates, daemon=True)
-listener_thread.start()
-print("listener thread has started")
 
 while running:
     for event in pygame.event.get():
