@@ -10,20 +10,20 @@ SERVER = '127.0.0.1'
 RECEIVE_ADDR = (SERVER, RECEIVE_PORT)
 BROADCAST_ADDR = (SERVER, BROADCAST_PORT)
 
-ACTION_LOG = ['testing', 'pls', 'work', 'i', 'beg', 'still', 'work']
+# ACTION_LOG = ['testing', 'pls', 'work', 'i', 'beg', 'still', 'work']
 
 
 class Server():
     def __init__(self):
         # Initialize sockets for receiving and broadcasting
         self.server_recv = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.server_recv.bind(RECEIVE_ADDR)
+        self.server_recv.bind(BROADCAST_ADDR)
         self.server_broadcast = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.server_thread = threading.Thread(target=self.start)
         self.server_thread.start()
 
     def start(self):
-        print(f'[LISTENING] Server is listening on {RECEIVE_PORT}')
+        print(f'[LISTENING] Server is listening on ')
 
         # Main loop to listen for incoming messages
         while True:
