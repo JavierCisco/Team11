@@ -15,7 +15,21 @@ PGE message int:int
 [DEBUG] Drawing log_entry: Player 3 hit Player 2
 [DEBUG] Drawing log_entry: Player 3 hit Player 2
 
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
 
- if (oldMessage != server.MESSAGE):
-        ^^^^^^^^^^
-UnboundLocalError: cannot access local variable 'oldMessage' where it is not associated with a value
