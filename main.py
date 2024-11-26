@@ -40,6 +40,8 @@ music.play_track(start=120)
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
+action_log = []
+
 # Functions to start the server and client
 def start_SC(file: str):
     subprocess.Popen(['python3', f'{file}.py'])  # Start the UDP server
@@ -419,6 +421,11 @@ def draw_action_screen():
     # Draw the action log header
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
+    for i, log_entry in enumerate(action_log[-10:]):  # Last 10 entries
+        # print(f"[DEBUG] Drawing log_entry: {log_entry}")  # Debug each entry
+        log_text = font_text.render(log_entry, True, (255, 255, 255))  # White text
+        screen.blit(log_text, (50, 200 + i * 30))  # Adjust vertical spacing
+    pygame.display.update()
     
 play_action = True
 music_started = False
