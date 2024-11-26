@@ -17,11 +17,13 @@ class Server():
     def __init__(self):
         # Initialize sockets for receiving and broadcasting
         self.server_recv = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.server_recv.bind(BROADCAST_ADDR)
-        self.server_broadcast = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.server_thread = threading.Thread(target=self.start)
         self.server_recv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_recv.bind(BROADCAST_ADDR)
+        
+        self.server_broadcast = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.server_broadcast.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+        self.server_thread = threading.Thread(target=self.start)
         self.server_thread.start()
 
     def start(self):
@@ -31,14 +33,13 @@ class Server():
                 data, addr = self.server_broadcast.recvfrom(1024)
                 if data:
                     print(f'[RECEIVED] Data from {addr}: {data.decode(FORMAT)}')
-                    threading.Thread(target=self.handle_client, args=(data.decode(FORMAT), addr)).start()
+                    threading.Thread(target=self.handle_client, args=(data.decode(FORMAT),)).start()
             except Exception as e:
                 print(f'[ERROR] Server encountered an error: {e}')
 
     def start_traffic(self):
         # Start the game by broadcasting code 202
         print('[BROADCASTING] Starting game with code 202')
-        ACTION_LOG.append('[BROADCASTING] Starting game with code 202')
         self.server_broadcast.sendto("202".encode(FORMAT), BROADCAST_ADDR)
 
     def stop(self):
@@ -50,7 +51,7 @@ class Server():
         self.server_broadcast.close()
         print('[CLOSED] Broadcast socket successfully closed.')
 
-   def handle_client(self, msg: str):
+    def handle_client(self, msg: str):
         if ":" in msg:
             transmitter, hit_id = map(int, msg.split(":"))
             team = "Red" if transmitter % 2 != 0 else "Green"
@@ -93,7 +94,6 @@ class Server():
     #     else:
     #         print(f"[DEBUG] Unrecognized message: {msg}")
     #         self.server_broadcast.sendto(f"Unrecognized:{msg}".encode(FORMAT), BROADCAST_ADDR)
-
 
         def update_points(self, equip_id: int, hit_id: int, points: int):
             # Placeholder for updating points in the game
