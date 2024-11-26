@@ -80,6 +80,29 @@ def receive_message():
         # udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
         data, _ = udp_socket.recvfrom(1024)
         return data.decode(FORMAT)
+
+# Handle game events received from the server
+def process_game_event(message):
+    global team_scores, action_log
+    if message == "202":
+        print("[GAME STARTED] Starting the game!")
+        action_log.append("Game Started!")
+    elif message == "221":
+        print("[GAME ENDED] Stopping the game.")
+        action_log.append("Game Ended!")
+    elif ":" in message:
+        transmit_id, hit_id = message.split(":")
+        action_log.append(f"Player {transmit_id} hit Player {hit_id}")
+        update_score("Red" if int(transmit_id) % 2 != 0 else "Green", 10)
+    elif message == "43":
+        action_log.append("Green Base Hit! +100 Points")
+        update_score("Green", 100)
+    elif message == "53":
+        action_log.append("Red Base Hit! +100 Points")
+        update_score("Red", 100)
+    else:
+        print(f"[UNKNOWN EVENT] Received: {message}")
+        action_log.append(f"Unknown Event: {message}")
     
 # Update scores for teams
 team_scores = {"Red": 0, "Green": 0}
