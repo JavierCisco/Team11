@@ -10,17 +10,18 @@ SERVER = '127.0.0.1'
 RECEIVE_ADDR = (SERVER, RECEIVE_PORT)
 BROADCAST_ADDR = (SERVER, BROADCAST_PORT)
 
+# ACTION_LOG = ['testing', 'pls', 'work', 'i', 'beg', 'still', 'work']
+
+
 class Server():
     def __init__(self):
         # Initialize sockets for receiving and broadcasting
         self.server_recv = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.server_recv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_recv.bind(BROADCAST_ADDR)
-        
         self.server_broadcast = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.server_broadcast.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
         self.server_thread = threading.Thread(target=self.start)
+        self.server_recv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_broadcast.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_thread.start()
 
     def start(self):
@@ -30,13 +31,14 @@ class Server():
                 data, addr = self.server_broadcast.recvfrom(1024)
                 if data:
                     print(f'[RECEIVED] Data from {addr}: {data.decode(FORMAT)}')
-                    threading.Thread(target=self.handle_client, args=(data.decode(FORMAT),)).start()
+                    threading.Thread(target=self.handle_client, args=(data.decode(FORMAT), addr)).start()
             except Exception as e:
                 print(f'[ERROR] Server encountered an error: {e}')
 
     def start_traffic(self):
         # Start the game by broadcasting code 202
         print('[BROADCASTING] Starting game with code 202')
+        ACTION_LOG.append('[BROADCASTING] Starting game with code 202')
         self.server_broadcast.sendto("202".encode(FORMAT), BROADCAST_ADDR)
 
     def stop(self):
@@ -48,49 +50,50 @@ class Server():
         self.server_broadcast.close()
         print('[CLOSED] Broadcast socket successfully closed.')
 
-    def handle_client(self, msg: str):
-        if ":" in msg:
-            transmitter, hit_id = map(int, msg.split(":"))
-            team = "Red" if transmitter % 2 != 0 else "Green"
-            if transmitter % 2 == hit_id % 2:  # Friendly fire
-                points = -10
-                broadcast_msg = str(transmitter)
-            else:  # Opponent hit
-                points = 10
-                broadcast_msg = str(hit_id)
-            self.update_points(transmitter, hit_id, points)
-            self.server_broadcast.sendto(broadcast_msg.encode(FORMAT), BROADCAST_ADDR)
-        elif msg == "43":  # Green Base Hit
-            print("Message 43 received")
-            self.update_points(None, None, 100)
-        elif msg == "53":  # Red Base Hit
-            print("Message 53 received")
-            self.update_points(None, None, 100)
-        else:
-            print(f'[UNHANDLED MESSAGE] {msg}')
-        
-    # def handle_client(self, msg: str, BROADCAST_ADDR):
-    #     print(f"[DEBUG] Processing message from {BROADCAST_ADDR}: {msg}")
-        
-    #     if ":" in msg:  # Player hit event
+    # def handle_client(self, msg: str):
+    #     if ":" in msg:
     #         transmitter, hit_id = map(int, msg.split(":"))
-    #         print(f"[HIT EVENT] Transmitter: {transmitter}, Hit ID: {hit_id}")
-            
-    #         # Acknowledge the hit event
-    #         response = f"Ack:{transmitter}:{hit_id}"
-    #         self.server_broadcast.sendto(response.encode(FORMAT), BROADCAST_ADDR)
-    #         print(f"[DEBUG] Acknowledgment sent: {response}")
-        
-    #     elif msg == "202":  # Game Start
-    #         print("[DEBUG] Game Start message processed.")
-    #         self.server_broadcast.sendto("Game Started".encode(FORMAT), BROADCAST_ADDR)
-        
-    #     elif msg == "221":  # Game End
-    #         print("[DEBUG] Game End message processed.")
-        
+    #         team = "Red" if transmitter % 2 != 0 else "Green"
+    #         if transmitter % 2 == hit_id % 2:  # Friendly fire
+    #             points = -10
+    #             broadcast_msg = str(transmitter)
+    #         else:  # Opponent hit
+    #             points = 10
+    #             broadcast_msg = str(hit_id)
+    #         self.update_points(transmitter, hit_id, points)
+    #         self.server_broadcast.sendto(broadcast_msg.encode(FORMAT), BROADCAST_ADDR)
+    #     elif msg == "43":  # Green Base Hit
+    #         print("Message 43 received")
+    #         self.update_points(None, None, 100)
+    #     elif msg == "53":  # Red Base Hit
+    #         print("Message 43 received")
+    #         self.update_points(None, None, 100)
     #     else:
-    #         print(f"[DEBUG] Unrecognized message: {msg}")
-    #         self.server_broadcast.sendto(f"Unrecognized:{msg}".encode(FORMAT), BROADCAST_ADDR)
+    #         print(f'[UNHANDLED MESSAGE] {msg}')
+        
+    def handle_client(self, msg: str, addr):
+        print(f"[DEBUG] Processing message from {addr}: {msg}")
+        
+        if ":" in msg:  # Player hit event
+            transmitter, hit_id = map(int, msg.split(":"))
+            print(f"[HIT EVENT] Transmitter: {transmitter}, Hit ID: {hit_id}")
+            
+            # Acknowledge the hit event
+            response = f"Ack:{transmitter}:{hit_id}"
+            self.server_broadcast.sendto(response.encode(FORMAT), addr)
+            print(f"[DEBUG] Acknowledgment sent: {response}")
+        
+        elif msg == "202":  # Game Start
+            print("[DEBUG] Game Start message processed.")
+            self.server_broadcast.sendto("Game Started".encode(FORMAT), addr)
+        
+        elif msg == "221":  # Game End
+            print("[DEBUG] Game End message processed.")
+        
+        else:
+            print(f"[DEBUG] Unrecognized message: {msg}")
+            self.server_broadcast.sendto(f"Unrecognized:{msg}".encode(FORMAT), addr)
+
 
         def update_points(self, equip_id: int, hit_id: int, points: int):
             # Placeholder for updating points in the game
@@ -99,4 +102,3 @@ class Server():
 
 if __name__ == "__main__":
     server = Server()
-# There is no indentation error
