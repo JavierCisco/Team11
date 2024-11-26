@@ -410,7 +410,7 @@ def draw_action_screen():
     BLUE = (0, 0, 255)
     WHITE = (255, 255, 255)
     
-    from server import ACTION_LOG
+    # from server import ACTION_LOG
     
     # Draw the current scores header
     screen.blit(font_title.render("Current Scores", True, BLUE), (700, 20))
