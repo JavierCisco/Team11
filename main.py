@@ -66,17 +66,11 @@ def send_message(message):
 
 # Function to receive messages from the server
 def receive_message():
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-            udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Allow reuse
-            udp_socket.bind(('127.0.0.1', RECEIVE_PORT))  # Ensure it binds to port 7501
-            print("[DEBUG] Waiting for messages...")
-            data, _ = udp_socket.recvfrom(1024)
-            print(f"[DEBUG] Received data: {data.decode(FORMAT)}")
-            return data.decode(FORMAT)
-    except Exception as e:
-        print(f"[ERROR] receive_message encountered an error: {e}")
-        raise
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+        udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
+        print("[DEBUG] Listening for messages...")
+        data, _ = udp_socket.recvfrom(1024)
+        return data.decode(FORMAT)
     
 # Handle game events received from the server
 def process_game_event(message):
@@ -126,11 +120,11 @@ def update_score(team, points):
 
 # Thread to listen for updates from the server
 def listen_for_updates():
-    print("[DEBUG] Listener function running...")
+    print("[DEBUG] Listener thread running...")
     while True:
         try:
+            print("try block activated in listenForUpdates")
             message = receive_message()
-            print("Is the try in listenForUpdates working?")
             if message:
                 print(f"[DEBUG] Processing message: {message}")
                 process_game_event(message)
@@ -435,7 +429,7 @@ def draw_action_screen():
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
     for i, log_entry in enumerate(action_log[-10:]):  # Last 10 entries
-        # print(f"[DEBUG] Drawing log_entry: {log_entry}")  # Debug each entry
+        print(f"[DEBUG] Drawing log_entry: {log_entry}")  # Debug each entry
         log_text = font_text.render(log_entry, True, (255, 255, 255))  # White text
         screen.blit(log_text, (50, 200 + i * 30))  # Adjust vertical spacing
     pygame.display.update()
@@ -537,7 +531,7 @@ on_splash_screen = True
 # Start the update listener thread
 listener_thread = threading.Thread(target=listen_for_updates, daemon=True)
 listener_thread.start()
-print("Starting listener thread")
+print("listener thread has started")
 
 while running:
     for event in pygame.event.get():
