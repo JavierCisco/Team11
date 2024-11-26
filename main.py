@@ -47,11 +47,6 @@ def start_SC(file: str):
 start_SC('server')
 start_SC('client')
 
-# UDP setup
-# UDP_IP = "127.0.0.1"  # replace with your target IP
-# UDP_PORT = 7500       # the port to broadcast equipment codes
-# udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
 # Constants for communication
 SERVER = '127.0.0.1'
 BROADCAST_PORT = 7500
@@ -86,15 +81,26 @@ def process_game_event(message):
         print("[GAME ENDED] Stopping the game.")
         action_log.append("Game Ended!")
     elif ":" in message:
-        transmit_id, hit_id = message.split(":")
-        action_log.append(f"Player {transmit_id} hit Player {hit_id}")
-        update_score("Red" if int(transmit_id) % 2 != 0 else "Green", 10)
+        transmitter, hit_player = message.split(":")
+        transmitter = int(transmitter)
+        hit_player = int(hit_player)
+
+        if transmitter % 2 == hit_player % 2:  # Friendly fire
+            update_score("Red" if transmitter % 2 != 0 else "Green", -10)
+            action_log.append(f"Player {transmitter} (Friendly Fire) hit Player {hit_player}")
+        else:  # Opponent hit
+            update_score("Red" if transmitter % 2 != 0 else "Green", 10)
+            action_log.append(f"Player {transmitter} hit Player {hit_player}")
+
+        # Update UI dynamically
+        draw_action_screen()
+        pygame.display.update()
     elif message == "43":
         action_log.append("Green Base Hit! +100 Points")
-        update_score("Green", 100)
+        update_score("Red", 100)
     elif message == "53":
         action_log.append("Red Base Hit! +100 Points")
-        update_score("Red", 100)
+        update_score("Green", 100)
     else:
         print(f"[UNKNOWN EVENT] Received: {message}")
         action_log.append(f"Unknown Event: {message}")
@@ -504,7 +510,6 @@ key_to_action = {
 # main loop
 running = True
 on_splash_screen = True
-
 
 # Start the update listener thread
 listener_thread = threading.Thread(target=listen_for_updates, daemon=True)
