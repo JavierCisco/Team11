@@ -14,21 +14,21 @@ class Server():
     def __init__(self):
         # Initialize sockets for receiving and broadcasting
         self.server_recv = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.server_recv.bind(RECEIVE_ADDR)
+        self.server_recv.bind(BROADCAST_ADDR)
         self.server_broadcast = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.server_thread = threading.Thread(target=self.start)
         self.server_thread.start()
 
     def start(self):
-        print(f'[LISTENING] Server is listening on {RECEIVE_PORT}')
-
-        # Main loop to listen for incoming messages
+        print(f'[LISTENING] Server is listening on {BROADCAST_PORT}')
         while True:
-            data, addr = self.server_recv.recvfrom(1024)
-            if data:
-                print(f'[RECEIVED] Data from {addr}: {data.decode(FORMAT)}')
-                client_thread = threading.Thread(target=self.handle_client, args=(data.decode(FORMAT),))
-                client_thread.start()
+            try:
+                data, addr = self.server_broadcast.recvfrom(1024)
+                if data:
+                    print(f'[RECEIVED] Data from {addr}: {data.decode(FORMAT)}')
+                    threading.Thread(target=self.handle_client, args=(data.decode(FORMAT), addr)).start()
+            except Exception as e:
+                print(f'[ERROR] Server encountered an error: {e}')
 
     def start_traffic(self):
         # Start the game by broadcasting code 202
