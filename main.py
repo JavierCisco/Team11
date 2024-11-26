@@ -67,7 +67,8 @@ def send_message(message):
 # Function to receive messages from the server
 def receive_message():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-        # udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
+        udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
+        print("[DEBUG] Listening for messages...")
         data, _ = udp_socket.recvfrom(1024)
         return data.decode(FORMAT)
     
@@ -119,9 +120,15 @@ def update_score(team, points):
 
 # Thread to listen for updates from the server
 def listen_for_updates():
+    print("[DEBUG] Listener thread running...")
     while True:
-        message = receive_message()
-        process_game_event(message)
+        try:
+            message = receive_message()
+            if message:
+                print(f"[DEBUG] Processing message: {message}")
+                process_game_event(message)
+        except Exception as e:
+            print(f"[ERROR] Listener encountered an error: {e}")
 
 # TextBox class for table cells
 class TextBox:
