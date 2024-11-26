@@ -1,0 +1,35 @@
+Countdown started!
+[DEBUG] Processing message: 3:2
+process game event function is being called
+PGE message int:int
+[SCORE UPDATE] Red Team: 10 points
+[DEBUG] Drawing log_entry: Player 3 hit Player 2
+[DEBUG] Drawing log_entry: Player 3 hit Player 2
+[DEBUG] Listening for messages...
+[DEBUG] Drawing log_entry: Player 3 hit Player 2
+[DEBUG] Drawing log_entry: Player 3 hit Player 2
+[DEBUG] Drawing log_entry: Player 3 hit Player 2
+[DEBUG] Drawing log_entry: Player 3 hit Player 2
+[DEBUG] Drawing log_entry: Player 3 hit Player 2
+[DEBUG] Drawing log_entry: Player 3 hit Player 2
+[DEBUG] Drawing log_entry: Player 3 hit Player 2
+[DEBUG] Drawing log_entry: Player 3 hit Player 2
+
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+[ERROR] receive_message encountered an error: [Errno 98] Address already in use
+[ERROR] Listener encountered an error: [Errno 98] Address already in use
+

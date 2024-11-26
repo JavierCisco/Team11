@@ -48,8 +48,6 @@ def start_SC(file: str):
 # Call this functions to start the server and client
 start_SC('server')
 # start_SC('client')
-# Client file not needed. Main.py is the client
-
 
 # Constants for communication
 SERVER = '127.0.0.1'
@@ -78,23 +76,43 @@ def send_message(message):
         udp_socket.sendto(message.encode(FORMAT), (SERVER, BROADCAST_PORT))
 
 # Function to receive messages from the server
+# def receive_message():
+#     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+#         udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
+#         print("[DEBUG] Listening for messages...")
+#         data, _ = udp_socket.recvfrom(1024)
+#         return data.decode(FORMAT)
+        
 def receive_message():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+        udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
-        data, _ = udp_socket.recvfrom(1024)
-        return data.decode(FORMAT)
+        udp_socket.settimeout(5)  # Timeout after 5 seconds
+        try:
+            print("[DEBUG] Listening for messages...")
+            data, _ = udp_socket.recvfrom(1024)
+            print(f"[DEBUG] Received data: {data.decode(FORMAT)}")
+            process_game_event(data.decode(FORMAT))
+            return data.decode(FORMAT)
+        except socket.timeout:
+            print("[DEBUG] No message received (timeout).")
+            return None
 
 # Handle game events received from the server
 def process_game_event(message):
     global team_scores, action_log
+    print("process game event function is being called")
     if message == "202":
+        print("PGE message 202")
         print("[GAME STARTED] Starting the game!")
         action_log.append("Game Started!")
     elif message == "221":
+        print("PGE message 221")
         print("[GAME ENDED] Stopping the game.")
         action_log.append("Game Ended!")
     elif ":" in message:
-        transmit_id, hit_id = message.split(":")
+        print("PGE message int:int")
+        transmitter, hit_player = message.split(":")
         transmitter = int(transmitter)
         hit_player = int(hit_player)
 
@@ -128,9 +146,16 @@ def update_score(team, points):
 
 # Thread to listen for updates from the server
 def listen_for_updates():
+    print("[DEBUG] Listener thread running...")
     while True:
-        message = receive_message()
-        process_game_event(message)
+        try:
+            print("try block activated in listenForUpdates")
+            message = receive_message()
+            if message:
+                print(f"[DEBUG] Processing message: {message}")
+                process_game_event(message)
+        except Exception as e:
+            print(f"[ERROR] Listener encountered an error: {e}")
 
 # TextBox class for table cells
 class TextBox:
@@ -422,10 +447,9 @@ def draw_action_screen():
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
     for i, log_entry in enumerate(action_log[-10:]):  # Last 10 entries
-        # print(f"[DEBUG] Drawing log_entry: {log_entry}")  # Debug each entry
-        log_text = font_text.render(log_entry, True, (255, 255, 255))  # White text
-        screen.blit(log_text, (50, 200 + i * 30))  # Adjust vertical spacing
-    pygame.display.update()
+        log_text = font_text.render(log_entry, True, WHITE)
+        screen.blit(log_text, (50, 300 + i * 30))  # Adjust vertical spacing
+
     
 play_action = True
 music_started = False
@@ -519,10 +543,6 @@ key_to_action = {
 running = True
 on_splash_screen = True
 
-
-# Start the update listener thread
-listener_thread = threading.Thread(target=listen_for_updates, daemon=True)
-listener_thread.start()
 
 while running:
     for event in pygame.event.get():
