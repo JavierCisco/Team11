@@ -6,6 +6,7 @@ import subprocess
 import threading
 import time
 
+
 from database import *
 from music import Music
 
@@ -39,7 +40,6 @@ music.play_track(start=120)
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
-action_log = []
 # Functions to start the server and client
 def start_SC(file: str):
     subprocess.Popen(['python3', f'{file}.py'])  # Start the UDP server
@@ -47,16 +47,21 @@ def start_SC(file: str):
 start_SC('server')
 start_SC('client')
 
-# UDP setup
-# UDP_IP = "127.0.0.1"  # replace with your target IP
-# UDP_PORT = 7500       # the port to broadcast equipment codes
-# udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # Constants for communication
 SERVER = '127.0.0.1'
 BROADCAST_PORT = 7500
 RECEIVE_PORT = 7501
 FORMAT = 'utf-8'
+
+def end_game():
+    for _ in range(3):
+        send_message("221")
+        time.sleep(0.1)
+    bye_data()	
+    pygame.quit()
+    # udp_socket.close()
+    sys.exit()
 
 def send_equipment_code(code):
     message = str(code).encode(FORMAT)
@@ -76,29 +81,6 @@ def receive_message():
         data, _ = udp_socket.recvfrom(1024)
         return data.decode(FORMAT)
     
-# Handle game events received from the server
-def process_game_event(message):
-    global team_scores, action_log
-    if message == "202":
-        print("[GAME STARTED] Starting the game!")
-        action_log.append("Game Started!")
-    elif message == "221":
-        print("[GAME ENDED] Stopping the game.")
-        action_log.append("Game Ended!")
-    elif ":" in message:
-        transmit_id, hit_id = message.split(":")
-        action_log.append(f"Player {transmit_id} hit Player {hit_id}")
-        update_score("Red" if int(transmit_id) % 2 != 0 else "Green", 10)
-    elif message == "43":
-        action_log.append("Green Base Hit! +100 Points")
-        update_score("Green", 100)
-    elif message == "53":
-        action_log.append("Red Base Hit! +100 Points")
-        update_score("Red", 100)
-    else:
-        print(f"[UNKNOWN EVENT] Received: {message}")
-        action_log.append(f"Unknown Event: {message}")
-
 # Update scores for teams
 team_scores = {"Red": 0, "Green": 0}
 
@@ -269,8 +251,7 @@ def prompt_codename(player_id, type):
         while input_active:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    end_game
                 codename_textbox.handle_event(event)
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
@@ -360,14 +341,7 @@ def delete_player():
     prompt_codename(0, 'delete')
     print(f'Player removed!')
 
-def end_game():
-    for _ in range(3):
-        send_message("221")
-        time.sleep(0.1)
-    bye_data()	
-    pygame.quit()
-    # udp_socket.close()
-    sys.exit()
+
 
 game_start_time = pygame.time.get_ticks()
 game_time = pygame.time.get_ticks()
@@ -376,7 +350,7 @@ total_game_time = 0
 def increment_score(player_name, points):
     print('points added')
 def decrement_score(player_name, points):
-    print("points recreased")
+    print("points decreased")
 
 # action screen code
 def draw_action_screen():
@@ -389,9 +363,11 @@ def draw_action_screen():
     GREEN = (0, 255, 0)
     BLUE = (0, 0, 255)
     WHITE = (255, 255, 255)
-    # Draw the current scores header
     
-    screen.blit(font_title.render("Current Scores", True, BLUE), (0, 20))
+    from server import ACTION_LOG
+    
+    # Draw the current scores header
+    screen.blit(font_title.render("Current Scores", True, BLUE), (700, 20))
 
     # Draw Red Team scores
     red_team_header = font_text.render("Red Team", True, RED)
@@ -410,8 +386,12 @@ def draw_action_screen():
     # Draw the action log header
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
-
-    # Timer logic (Update this part)
+    recent_action = ACTION_LOG[-5:]
+    y_spacing = 0
+    for action in recent_action:
+        action_text = font_text.render(f'{action}', True, WHITE)
+        screen.blit(action_text, (50, 300 + y_spacing))
+        y_spacing += action_text.get_height() + 10
     
 play_action = True
 music_started = False
@@ -529,7 +509,6 @@ while running:
                         if clicked is not None:
                             active_table_id, row, col = clicked
                             handle_box_click(row, col)
-                            # text_box.active = True
                 
         # check for keypress events
         elif event.type == pygame.KEYDOWN:
@@ -570,9 +549,9 @@ while running:
         font = pygame.font.Font(None, 36)
         text = font.render("Entry Screen",True, BLACK)
         screen.blit(text, (280, 0))
-        pygame.draw.rect(screen, BLACK, pygame.Rect(0, 550, 900, 40))
-        text = font.render("Cick [F6] to Delete Player, [F7] to insert player from selected text box", True, WHITE)
-        screen.blit(text, (50,560))
+        pygame.draw.rect(screen, BLACK, pygame.Rect(50, 550, 900, 40))
+        text = font.render("Click [F6] to Delete Player, [F7] to insert player from selected text box", True, WHITE)
+        screen.blit(text, (100,560))
         ##################################################
         
         # Draw the tables
@@ -581,7 +560,7 @@ while running:
                 for text_box in row:
                     text_box.draw(screen)
                     
-        #draw columu labels (left)
+        #draw columu labels
         label_font = pygame.font.Font(None, 24)
         name_label = label_font.render("Player ID", True, BLACK)
         id_label = label_font.render("Equipment ID", True, BLACK)
