@@ -10,14 +10,14 @@ SERVER = '127.0.0.1'
 RECEIVE_ADDR = (SERVER, RECEIVE_PORT)
 BROADCAST_ADDR = (SERVER, BROADCAST_PORT)
 
-ACTION_LOG = ['testing', 'pls', 'work', 'i', 'beg', 'still', 'work']
+# ACTION_LOG = ['testing', 'pls', 'work', 'i', 'beg', 'still', 'work']
 
 
 class Server():
     def __init__(self):
         # Initialize sockets for receiving and broadcasting
         self.server_recv = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.server_recv.bind(RECEIVE_ADDR)
+        self.server_recv.bind(BROADCAST_ADDR)
         self.server_broadcast = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.server_thread = threading.Thread(target=self.start)
         self.server_thread.start()
@@ -27,7 +27,7 @@ class Server():
 
         # Main loop to listen for incoming messages
         while True:
-            ACTION_LOG.append('update')
+            # ACTION_LOG.append('update')
             data, addr = self.server_recv.recvfrom(1024)
             if data:
                 print(f'[RECEIVED] Data from {addr}: {data.decode(FORMAT)}')
@@ -66,37 +66,37 @@ class Server():
         else:
             print(f'[ERROR] Unrecognized message format: {msg}')
 
-    def send_hit_id(self, equip_id_str: str, hit_id_str: str):
-        # Handle hit events and update points accordingly
-        equip_id = int(equip_id_str)
-        hit_id = int(hit_id_str)
-        points = 0
-        message = ''
+    # def send_hit_id(self, equip_id_str: str, hit_id_str: str):
+    #     # Handle hit events and update points accordingly
+    #     equip_id = int(equip_id_str)
+    #     hit_id = int(hit_id_str)
+    #     points = 0
+    #     message = ''
 
-        if hit_id == 43:  # Green Base hit
-            if equip_id % 2 == 0:
-                print(f'[GREEN BASE HIT] Friendly fire by {equip_id}')
-            else:
-                points = 100
-                message = f'{hit_id}'
-        elif hit_id == 53:  # Red Base hit
-            if equip_id % 2 != 0:
-                print(f'[RED BASE HIT] Friendly fire by {equip_id}')
-            else:
-                points = 100
-                message = f'{hit_id}'
-        elif (equip_id + hit_id) % 2 == 0:  # Friendly fire between players
-            points = -10
-            message = f'{equip_id}'
-        else:  # Valid hit
-            points = 10
-            message = f'{hit_id}'
+    #     if hit_id == 43:  # Green Base hit
+    #         if equip_id % 2 == 0:
+    #             print(f'[GREEN BASE HIT] Friendly fire by {equip_id}')
+    #         else:
+    #             points = 100
+    #             message = f'{hit_id}'
+    #     elif hit_id == 53:  # Red Base hit
+    #         if equip_id % 2 != 0:
+    #             print(f'[RED BASE HIT] Friendly fire by {equip_id}')
+    #         else:
+    #             points = 100
+    #             message = f'{hit_id}'
+    #     elif (equip_id + hit_id) % 2 == 0:  # Friendly fire between players
+    #         points = -10
+    #         message = f'{equip_id}'
+    #     else:  # Valid hit
+    #         points = 10
+    #         message = f'{hit_id}'
 
-        self.update_points(equip_id, hit_id, points)
+    #     self.update_points(equip_id, hit_id, points)
 
-        if message:
-            print(f'[BROADCASTING] Sending message: {message}')
-            self.server_broadcast.sendto(message.encode(FORMAT), BROADCAST_ADDR)
+    #     if message:
+    #         print(f'[BROADCASTING] Sending message: {message}')
+    #         self.server_broadcast.sendto(message.encode(FORMAT), BROADCAST_ADDR)
 
     def update_points(self, equip_id: int, hit_id: int, points: int):
         # Placeholder for updating points in the game
