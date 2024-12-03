@@ -8,6 +8,7 @@ import time
 from database import *
 from music import Music
 from server import Server
+from textScroll import TextScroll
 
 
 # initializing pygame
@@ -16,9 +17,28 @@ pygame.mixer.init()
 server = Server()
 music = Music()
 
+
 # screen dimensions
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
+
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+
+# Define the area for the action log (e.g., bottom right corner)
+action_log_area = pygame.Rect(50, 250, 900, 180)  # Adjust size and position as needed
+font_action_log = pygame.font.Font(None, 24)  # Use a readable font size
+
+action_log_display = TextScroll(
+    area=action_log_area,
+    font=font_action_log,
+    fg_color = WHITE,
+    bk_color = BLACK,
+    text=[],  # Start with an empty log
+    ms_per_line = 2000  # Time delay for each line
+)
+
+server.action_log = action_log_display
 
 # set up the screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -47,11 +67,6 @@ def start_SC(file: str):
 start_SC('server')
 start_SC('client')
 
-# UDP setup
-# UDP_IP = "127.0.0.1"  # replace with your target IP
-# UDP_PORT = 7500       # the port to broadcast equipment codes
-# udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
 # Constants for communication
 SERVER = '127.0.0.1'
 BROADCAST_PORT = 7500
@@ -69,35 +84,45 @@ def send_message(message):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
         udp_socket.sendto(message.encode(FORMAT), (SERVER, BROADCAST_PORT))
 
-# Function to receive messages from the server
 def receive_message():
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-        # udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
-        data, _ = udp_socket.recvfrom(1024)
-        return data.decode(FORMAT)
-    
-# Handle game events received from the server
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+            #udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
+            data, _ = udp_socket.recvfrom(1024)
+            print(f"Received message: {data.decode(FORMAT)}")  # Debug print
+            return data.decode(FORMAT)
+    except Exception as e:
+        print(f"Error receiving message: {e}")
+        return None
+
 def process_game_event(message):
-    global team_scores, action_log
-    if message == "202":
-        print("[GAME STARTED] Starting the game!")
-        action_log.append("Game Started!")
-    elif message == "221":
-        print("[GAME ENDED] Stopping the game.")
-        action_log.append("Game Ended!")
-    elif ":" in message:
-        transmit_id, hit_id = message.split(":")
-        action_log.append(f"Player {transmit_id} hit Player {hit_id}")
-        update_score("Red" if int(transmit_id) % 2 != 0 else "Green", 10)
-    elif message == "43":
-        action_log.append("Green Base Hit! +100 Points")
+    global action_log_display
+
+    if message is None:
+        print("[ERROR] Received None message, skipping event processing.")
+        return
+
+    if "hit Green Base!" in message:
+        print(f"[BASE HIT] {message}")
+        action_log_display.add_line(message)
         update_score("Green", 100)
-    elif message == "53":
-        action_log.append("Red Base Hit! +100 Points")
+    elif "hit Red Base!" in message:
+        print(f"[BASE HIT] {message}")
+        action_log_display.add_line(message)
         update_score("Red", 100)
+    elif ":" in message:
+        try:
+            transmit_id, hit_id = message.split(":")
+            action_log_display.add_line(f"Player {transmit_id} hit Player {hit_id}")
+            update_score("Red" if int(transmit_id) % 2 != 0 else "Green", 10)
+        except ValueError as e:
+            print(f"[ERROR] Unable to parse hit event: {e}")
     else:
         print(f"[UNKNOWN EVENT] Received: {message}")
-        action_log.append(f"Unknown Event: {message}")
+        action_log_display.add_line(f"Unknown Event: {message}")
+
+
+    
 
 # Update scores for teams
 team_scores = {"Red": 0, "Green": 0}
@@ -112,6 +137,10 @@ def listen_for_updates():
     while True:
         message = receive_message()
         process_game_event(message)
+
+update_thread = threading.Thread(target=listen_for_updates, daemon=True)
+update_thread.start()
+
 
 # TextBox class for table cells
 class TextBox:
@@ -134,6 +163,10 @@ class TextBox:
             else:
                 self.active = False
             self.color = self.color_active if self.active else self.color_inactive
+            if event.button == 4:  # Scroll up
+                action_log_display.scroll(-1)
+            elif event.button == 5:  # Scroll down
+                action_log_display.scroll(1)
 
         if event.type == pygame.KEYDOWN:
             if self.active:
@@ -143,6 +176,11 @@ class TextBox:
                     self.text = self.text[:-1]
                 else:
                     self.text += event.unicode
+            if event.key == pygame.K_UP:  # Arrow up
+                action_log_display.scroll(-1)
+            elif event.key == pygame.K_DOWN:  # Arrow down
+                action_log_display.scroll(1)
+
     
     def is_clicked(self, pos):
         if self.rect.collidepoint(pos):
@@ -189,16 +227,19 @@ tables = [table1, table2]
 
 # button class
 class Button:
-    def __init__(self, text, x, y, width, height, action=None):
+    def __init__(self, text, x, y, width, height, action=None,color=(0, 0, 0), text_color=(255, 255, 255)):
         self.text_lines = text.split('\n')
         self.rect = pygame.Rect(x, y, width, height)
         self.action = action
         self.font = pygame.font.Font(None, 20)
+        self.color = color 
+        self.text_color = text_color
+
 
     def draw(self):
-        pygame.draw.rect(screen, (0, 0, 0), self.rect)  #draw buttons rectangle
+        pygame.draw.rect(screen, self.color, self.rect)  #draw buttons rectangle
         for i, line in enumerate(self.text_lines):
-            button_text = self.font.render(line, True, (255, 255, 255))
+            button_text = self.font.render(line, True, self.text_color)
             text_x = self.rect.x + (self.rect.width - button_text.get_width()) // 2
             text_y = self.rect.y + (self.rect.height - (len(self.text_lines) * self.font.get_height())) // 2 + i * self.font.get_height()
             screen.blit(button_text, (text_x, text_y))
@@ -214,6 +255,19 @@ def edit_game():
 
 def game_parameters():
     print("Game Parameters clicked!")
+
+end_game_button = Button(
+    text="End Game",
+    x=SCREEN_WIDTH - 150,  # Positioned near the right edge
+    y=SCREEN_HEIGHT - 100,  # Positioned near the bottom
+    width=120,
+    height=40,
+    action=None,  # No action needed for now
+    color=(255, 255, 255),  # White background
+    text_color=(0, 0, 0)  # Black text
+)
+action_screen_buttons = [end_game_button]
+
 
 # Countdown variables
 action = False
@@ -348,10 +402,12 @@ def delete_player():
     remove_player(playID)
     print(f'Player {playID} removed!')
 
+
 def end_game():
     for _ in range(3):
         send_message("221")
         time.sleep(0.1)
+        server.stop()
     bye_data()	
     pygame.quit()
     # udp_socket.close()
@@ -367,44 +423,15 @@ def decrement_score(player_name, points):
     print("points recreased")
 
 
-msg_array: list[str] = []
-def gameUpdates():
-    game_msg = []
-    last_update = 0
-    updateArr = server.points_to_game(last_update)
-    last_update = last_update + len(updateArr)
 
-
-    for update in updateArr:
-        equip_id = update.get('equip_id')
-        hit_id = update.get('hit_id')
-        points = update.get('points')
-        for player in red_team + green_team:
-            if player.equip_id == equip_id:
-                player.score += int(points)
-                shooting_player = player
-            elif player.equip_id == hit_id:
-                shot_player = player
-    
-        msg = ''
-        if points == 10:
-            msg = f'{shooting_player.name} hit {shot_player.name}'
-        elif points == -10:
-            meg = f'{shooting_player.name} hit friendly {shot_player.name}'
-        '''
-        elif points == 100:
-            base_hitters.apped(shooting_player)
-            msg = f'{shooting_player.name} hit '
-            msg += 'Red base' if hit_id == 53 else 'Green base'
-        '''
-        if msg != '':
-            game_msg.append(str(msg))
-    return game_msg
 
 
 def draw_action_screen():
     screen.fill((0, 0, 0))  # Black background
-
+      # Example: Add action log entries for testing
+    #action_log_display.add_line("Player 1 hit Player 2")
+    #action_log_display.add_line("Player 3 hit Player 4")
+    #action_log_display.add_line("Game Started!")
     # Fonts
     font_title = pygame.font.Font(None, 48)
     font_text = pygame.font.Font(None, 36)
@@ -443,8 +470,12 @@ def draw_action_screen():
         log_text = font_text.render(log_entry, True, WHITE)
         screen.blit(log_text, (50, 250 + i * 30))
 
-    #for msg in gameUpdates():
-        #message.add_line(msg)
+    #action_log_display.update()
+    
+    action_log_display.draw(screen)
+    # Draw the End Game Button
+    for button in action_screen_buttons:
+        button.draw()
     pygame.display.flip()
 
     
@@ -520,6 +551,7 @@ buttons = [
     Button("F8\nView Game", button_margin + 5 * (button_width + button_margin), y_position, button_width, button_height, view_game),
     Button("F10\nFlick Sync", button_margin + 6 * (button_width + button_margin), y_position, button_width, button_height, flick_sync),
     Button("F12\nClear Game", button_margin + 7 * (button_width + button_margin), y_position, button_width, button_height, clear_game),
+    
 ]
 
 # dictionary to map keys to actions
@@ -557,14 +589,15 @@ while running:
             running = False
         elif event.type == show_main_screen_event and on_splash_screen:
             on_splash_screen = False
-            new_updates = gameUpdates()
-            action_log.extend(new_updates)
-            
+
         # check for mouse clicks
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouse_pos = event.pos
             for button in buttons:
                 button.is_clicked(mouse_pos)
+            for button in action_screen_buttons:
+                if button.is_clicked(mouse_pos): 
+                    print("End Game Button clicked!")
             for table in tables:
                 for row in table:
                     for text_box in row:
@@ -638,11 +671,14 @@ while running:
             button.draw()
         pygame.display.update()
 
+
+
     # game action screen
     elif play_action:
             draw_action_screen()
             game_timer('game')
 
 end_game
+
 
 
