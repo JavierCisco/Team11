@@ -144,6 +144,7 @@ class Server:
         hit_id = int(hit_id_str)
         points = 0
         message = ''
+        print(f"equip_id: {equip_id}, hit_id: {hit_id}")
 
         if hit_id == 43:  # Green Base hit
             if equip_id % 2 == 0:
