@@ -457,26 +457,16 @@ def draw_action_screen():
     # Draw Red Team scores
     red_team_header = font_text.render("Red Team", True, RED)
     screen.blit(red_team_header, (50, 20))
-    y_offset = 60
-
-    for equipment_code, score in player_points.items():
-        if int(equipment_code) % 2 != 0:  # Red team based on odd equipment_code
-            player_info = player_names.get(equipment_code, {"name": f"Player {equipment_code}"})
-            player_name = player_info["name"]
-            player_text = font_text.render(f"{player_name}: {score}", True, WHITE)
-            screen.blit(player_text, (50, y_offset))
-            y_offset += 30
+    for i, (player, score) in enumerate(red_team):
+        player_text = font_text.render(f"{player}: {score}", True, WHITE)
+        screen.blit(player_text, (50, 60 + i * 30))
 
     # Draw Green Team scores
     green_team_header = font_text.render("Green Team", True, GREEN)
     screen.blit(green_team_header, (500, 20))
-    for equipment_code, score in player_points.items():
-        if int(equipment_code) % 2 == 0:  # Green team based on even equipment_code
-            player_info = player_names.get(equipment_code, {"name": f"Player {equipment_code}"})
-            player_name = player_info["name"]
-            player_text = font_text.render(f"{player_name}: {score}", True, WHITE)
-            screen.blit(player_text, (500, y_offset))
-            y_offset += 30
+    for i, (player, score) in enumerate(green_team):
+        player_text = font_text.render(f"{player}: {score}", True, WHITE)
+        screen.blit(player_text, (500, 60 + i * 30))
 
     # Draw the action log header
     action_header = font_title.render("Current Game Action", True, BLUE)
@@ -523,17 +513,6 @@ def game_timer(type: str):
     else:
         timer_text = "00:00"  # Show "00:00" when time is up
 
-        if remaining_time <= 0:
-            if type == 'game':
-                # Trigger an action when time runs out
-                # print("6-minute timer has expired!")
-                play_action = True
-                # You may want to end the game or trigger another action here
-            elif type == 'start':
-                print("Start phase timer expired. Sending game start signal.")
-                send_message("202")
-                init_timer(6)
-
 	#screen stuff depending on what timer is called
     if type == 'start':
         screen.fill((255, 255, 255))  # White background
@@ -549,18 +528,18 @@ def game_timer(type: str):
 
     pygame.display.flip()
 
-    # if remaining_time <= 0:
-    #     if type == 'game':
-    #         # Trigger an action when time runs out
-    #         print("6-minute timer has expired!")
-    #         # You may want to end the game or trigger another action here
-    #     else:
-    #         global start_count, play_action
-    #         # This is where the white space error was.
-    #         start_count = False
-    #         play_action = True
-    #         send_message("202")
-    #         init_timer(6)
+    if remaining_time <= 0:
+        if type == 'game':
+            # Trigger an action when time runs out
+            print("6-minute timer has expired!")
+            # You may want to end the game or trigger another action here
+        else:
+            global start_count, play_action
+            # This is where the white space error was.
+            start_count = False
+            play_action = True
+            send_message("202")
+            init_timer(6)
 
 def test_func():
 # usable with 't' for now just used to view table players
