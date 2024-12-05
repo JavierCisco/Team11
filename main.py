@@ -5,21 +5,40 @@ import random
 import subprocess
 import threading
 import time
-
-
 from database import *
 from music import Music
+from server import Server
+from textScroll import TextScroll
+
 
 # initializing pygame
 pygame.init()
 pygame.mixer.init()
-
+server = Server()
 music = Music()
-entry_screen_active = True
+
 
 # screen dimensions
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
+
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+
+# Define the area for the action log (e.g., bottom right corner)
+action_log_area = pygame.Rect(50, 250, 900, 180)  # Adjust size and position as needed
+font_action_log = pygame.font.Font(None, 24)  # Use a readable font size
+
+action_log_display = TextScroll(
+    area=action_log_area,
+    font=font_action_log,
+    fg_color = WHITE,
+    bk_color = BLACK,
+    text=[],  # Start with an empty log
+    ms_per_line = 2000  # Time delay for each line
+)
+
+server.action_log = action_log_display
 
 # set up the screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -40,29 +59,19 @@ music.play_track(start=120)
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
 
+action_log = []
 # Functions to start the server and client
 def start_SC(file: str):
     subprocess.Popen(['python3', f'{file}.py'])  # Start the UDP server
 # Call this functions to start the server and client
 start_SC('server')
-# start_SC('client')
-
-action_log = []
+start_SC('client')
 
 # Constants for communication
 SERVER = '127.0.0.1'
 BROADCAST_PORT = 7500
 RECEIVE_PORT = 7501
 FORMAT = 'utf-8'
-
-def end_game():
-    for _ in range(3):
-        send_message("221")
-        time.sleep(0.1)
-    bye_data()	
-    pygame.quit()
-    # udp_socket.close()
-    sys.exit()
 
 def send_equipment_code(code):
     message = str(code).encode(FORMAT)
@@ -75,51 +84,46 @@ def send_message(message):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
         udp_socket.sendto(message.encode(FORMAT), (SERVER, BROADCAST_PORT))
 
-# Function to receive messages from the server
 def receive_message():
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-        udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
-        data, _ = udp_socket.recvfrom(1024)
-        return data.decode(FORMAT)
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+            #udp_socket.bind(('127.0.0.1', RECEIVE_PORT))
+            data, _ = udp_socket.recvfrom(1024)
+            print(f"Received message: {data.decode(FORMAT)}")  # Debug print
+            return data.decode(FORMAT)
+    except Exception as e:
+        print(f"Error receiving message: {e}")
+        return None
 
-# Handle game events received from the server
 def process_game_event(message):
-    global team_scores, action_log
-    print("process game event function is being called")
-    if message == "202":
-        print("PGE message 202")
-        print("[GAME STARTED] Starting the game!")
-        action_log.append("Game Started!")
-    elif message == "221":
-        print("PGE message 221")
-        print("[GAME ENDED] Stopping the game.")
-        action_log.append("Game Ended!")
-    elif ":" in message:
-        print("PGE message int:int")
-        transmitter, hit_player = message.split(":")
-        transmitter = int(transmitter)
-        hit_player = int(hit_player)
+    global action_log_display
 
-        if transmitter % 2 == hit_player % 2:  # Friendly fire
-            update_score("Red" if transmitter % 2 != 0 else "Green", -10)
-            action_log.append(f"Player {transmitter} (Friendly Fire) hit Player {hit_player}")
-        else:  # Opponent hit
-            update_score("Red" if transmitter % 2 != 0 else "Green", 10)
-            action_log.append(f"Player {transmitter} hit Player {hit_player}")
+    if message is None:
+        print("[ERROR] Received None message, skipping event processing.")
+        return
 
-        # Update UI dynamically
-        draw_action_screen()
-        pygame.display.update()
-    elif message == "43":
-        action_log.append("Green Base Hit! +100 Points")
-        update_score("Red", 100)
-    elif message == "53":
-        action_log.append("Red Base Hit! +100 Points")
+    if "hit Green Base!" in message:
+        print(f"[BASE HIT] {message}")
+        action_log_display.add_line(message)
         update_score("Green", 100)
+    elif "hit Red Base!" in message:
+        print(f"[BASE HIT] {message}")
+        action_log_display.add_line(message)
+        update_score("Red", 100)
+    elif ":" in message:
+        try:
+            transmit_id, hit_id = message.split(":")
+            action_log_display.add_line(f"Player {transmit_id} hit Player {hit_id}")
+            update_score("Red" if int(transmit_id) % 2 != 0 else "Green", 10)
+        except ValueError as e:
+            print(f"[ERROR] Unable to parse hit event: {e}")
     else:
         print(f"[UNKNOWN EVENT] Received: {message}")
-        action_log.append(f"Unknown Event: {message}")
+        action_log_display.add_line(f"Unknown Event: {message}")
+
+
     
+
 # Update scores for teams
 team_scores = {"Red": 0, "Green": 0}
 
@@ -130,16 +134,13 @@ def update_score(team, points):
 
 # Thread to listen for updates from the server
 def listen_for_updates():
-    print("[DEBUG] Listener thread running...")
     while True:
-        try:
-            print("try block activated in listenForUpdates")
-            message = receive_message()
-            if message:
-                print(f"[DEBUG] Processing message: {message}")
-                process_game_event(message)
-        except Exception as e:
-            print(f"[ERROR] Listener encountered an error: {e}")
+        message = receive_message()
+        process_game_event(message)
+
+update_thread = threading.Thread(target=listen_for_updates, daemon=True)
+update_thread.start()
+
 
 # TextBox class for table cells
 class TextBox:
@@ -162,6 +163,10 @@ class TextBox:
             else:
                 self.active = False
             self.color = self.color_active if self.active else self.color_inactive
+            if event.button == 4:  # Scroll up
+                action_log_display.scroll(-1)
+            elif event.button == 5:  # Scroll down
+                action_log_display.scroll(1)
 
         if event.type == pygame.KEYDOWN:
             if self.active:
@@ -171,6 +176,11 @@ class TextBox:
                     self.text = self.text[:-1]
                 else:
                     self.text += event.unicode
+            if event.key == pygame.K_UP:  # Arrow up
+                action_log_display.scroll(-1)
+            elif event.key == pygame.K_DOWN:  # Arrow down
+                action_log_display.scroll(1)
+
     
     def is_clicked(self, pos):
         if self.rect.collidepoint(pos):
@@ -217,16 +227,19 @@ tables = [table1, table2]
 
 # button class
 class Button:
-    def __init__(self, text, x, y, width, height, action=None):
+    def __init__(self, text, x, y, width, height, action=None,color=(0, 0, 0), text_color=(255, 255, 255)):
         self.text_lines = text.split('\n')
         self.rect = pygame.Rect(x, y, width, height)
         self.action = action
         self.font = pygame.font.Font(None, 20)
+        self.color = color 
+        self.text_color = text_color
+
 
     def draw(self):
-        pygame.draw.rect(screen, (0, 0, 0), self.rect)  #draw buttons rectangle
+        pygame.draw.rect(screen, self.color, self.rect)  #draw buttons rectangle
         for i, line in enumerate(self.text_lines):
-            button_text = self.font.render(line, True, (255, 255, 255))
+            button_text = self.font.render(line, True, self.text_color)
             text_x = self.rect.x + (self.rect.width - button_text.get_width()) // 2
             text_y = self.rect.y + (self.rect.height - (len(self.text_lines) * self.font.get_height())) // 2 + i * self.font.get_height()
             screen.blit(button_text, (text_x, text_y))
@@ -238,12 +251,23 @@ class Button:
 
 # button action functions
 def edit_game():
-    global entry_screen_active
-    entry_screen_active = True
-    print("\nEdit Game clicked!: Going back to Entry Screen")
+    print("Edit Game clicked!")
 
 def game_parameters():
     print("Game Parameters clicked!")
+
+end_game_button = Button(
+    text="End Game",
+    x=SCREEN_WIDTH - 150,  # Positioned near the right edge
+    y=SCREEN_HEIGHT - 100,  # Positioned near the bottom
+    width=120,
+    height=40,
+    action=None,  # No action needed for now
+    color=(255, 255, 255),  # White background
+    text_color=(0, 0, 0)  # Black text
+)
+action_screen_buttons = [end_game_button]
+
 
 # Countdown variables
 action = False
@@ -290,53 +314,35 @@ def handle_box_click(row, col):
     selected_col = col
 
 # Function to handle a pop-up screen to enter codename when one is not found
-def prompt_codename(player_id, type):
+def prompt_codename(player_id):
     input_active = True
     codename_textbox = TextBox(300,200,400,40)
-    if type == 'add':
-        while input_active:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    end_game
-                codename_textbox.handle_event(event)
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        # When Enter is pressed, end the input
-                        codename = codename_textbox.text
+   
+
+    while input_active:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            codename_textbox.handle_event(event)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    # When Enter is pressed, end the input
+                    codename = codename_textbox.text
+                    input_active = False
+                    if codename:
+                        insert_player(player_id, codename)
                         input_active = False
-                        if codename:
-                            insert_player(player_id, codename)
-                            #input_active = False
-                            print(f"Codename entered: {codename}")
-                        else:
-                            print("Codename can't be empty")
+                        print(f"Codename entered: {codename}")
+                    else:
+                        print("Codename can't be empty")
                 
-            screen.fill((255,255,255))
-            font = pygame.font.Font(None, 36)
-            text = font.render(f"Enter Codename for Player ID {player_id}:", True, (0,0,0))
-            screen.blit(text, (300, 150))
-            codename_textbox.draw(screen)
-            pygame.display.update()
-    elif type == 'delete':
-        while input_active:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                codename_textbox.handle_event(event)
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        # When Enter is pressed, end the input
-                        playerID = codename_textbox.text
-                        input_active = False
-                        remove_player(playerID)
-                
-            screen.fill((255,255,255))
-            font = pygame.font.Font(None, 36)
-            text = font.render(f"Enter Player ID who you wish to delete:", True, (0,0,0))
-            screen.blit(text, (300, 150))
-            codename_textbox.draw(screen)
-            pygame.display.update()
+        screen.fill((255,255,255))
+        font = pygame.font.Font(None, 36)
+        text = font.render(f"Enter Codename for Player ID {player_id}:", True, (0,0,0))
+        screen.blit(text, (300, 150))
+        codename_textbox.draw(screen)
+        pygame.display.update()
 
 def add_player():
     global active_table_id
@@ -366,14 +372,22 @@ def add_player():
     code_name = query_codename(player_id)
 
     # If no codename is found, prompt for a new one
-    while not code_name:
+    if not code_name:
         print(f"Codename not found for Player ID: {player_id}")
-        prompt_codename(player_id, 'add')  # This will insert the codename into the database if provided
-        code_name = query_codename(player_id)	    # Confirm that a codename exists after prompting
-    
-    print(f"Player added:\nTeam: {team}\nName: {code_name}\nID: {player_id}\nEquipment Code: {equipment_code}")
-    # Broadcast the equipment code via UDP
-    send_equipment_code(equipment_code)
+        prompt_codename(player_id)  # This will insert the codename into the database if provided
+
+    # Confirm that a codename exists after prompting
+    code_name = query_codename(player_id)
+    if code_name:
+        # Insert the player into the database (for Table 2 as well)
+        insert_player(player_id, code_name)
+
+        print(f"Player added:\nTeam: {team}\nName: {code_name}\nID: {player_id}\nEquipment Code: {equipment_code}")
+
+        # Broadcast the equipment code via UDP
+        send_equipment_code(equipment_code)
+    else:
+        print("No codename entered; player was not added.")
     add_player_to_team(team, code_name, score=0)
 
 def add_player_to_team(team, player_name, score=0):
@@ -384,10 +398,20 @@ def add_player_to_team(team, player_name, score=0):
     
 
 def delete_player():
-    prompt_codename(0, 'delete')
-    print(f'Player removed!')
+    playID = input('ID of player to remove?:')
+    remove_player(playID)
+    print(f'Player {playID} removed!')
 
 
+def end_game():
+    for _ in range(3):
+        send_message("221")
+        time.sleep(0.1)
+        server.stop()
+    bye_data()	
+    pygame.quit()
+    # udp_socket.close()
+    sys.exit()
 
 game_start_time = pygame.time.get_ticks()
 game_time = pygame.time.get_ticks()
@@ -396,24 +420,31 @@ total_game_time = 0
 def increment_score(player_name, points):
     print('points added')
 def decrement_score(player_name, points):
-    print("points decreased")
+    print("points recreased")
 
-# action screen code
+
+
+
+
 def draw_action_screen():
     screen.fill((0, 0, 0))  # Black background
+      # Example: Add action log entries for testing
+    #action_log_display.add_line("Player 1 hit Player 2")
+    #action_log_display.add_line("Player 3 hit Player 4")
+    #action_log_display.add_line("Game Started!")
     # Fonts
     font_title = pygame.font.Font(None, 48)
     font_text = pygame.font.Font(None, 36)
+  
     # Colors
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
     BLUE = (0, 0, 255)
     WHITE = (255, 255, 255)
-    
-    # from server import ACTION_LOG
-    
+
     # Draw the current scores header
-    screen.blit(font_title.render("Current Scores", True, BLUE), (700, 20))
+    current_scores_header = font_title.render("Current Scores", True, BLUE)
+    screen.blit(current_scores_header, (750, 20))
 
     # Draw Red Team scores
     red_team_header = font_text.render("Red Team", True, RED)
@@ -432,9 +463,22 @@ def draw_action_screen():
     # Draw the action log header
     action_header = font_title.render("Current Game Action", True, BLUE)
     screen.blit(action_header, (50, 200))
-    for i, log_entry in enumerate(action_log[-10:]):  # Last 10 entries
+
+
+    # Display the action log
+    for i, log_entry in enumerate(action_log[-10:]):  # Display the last 10 entries
         log_text = font_text.render(log_entry, True, WHITE)
-        screen.blit(log_text, (50, 300 + i * 30)) 
+        screen.blit(log_text, (50, 250 + i * 30))
+
+    #action_log_display.update()
+    
+    action_log_display.draw(screen)
+    # Draw the End Game Button
+    for button in action_screen_buttons:
+        button.draw()
+    pygame.display.flip()
+
+    
     
 play_action = True
 music_started = False
@@ -490,6 +534,7 @@ def game_timer(type: str):
             init_timer(6)
 
 def test_func():
+# usable with 't' for now just used to view table players
     view_database()
 
 button_width = 100  # width 
@@ -498,15 +543,15 @@ button_margin = 10  # margin
 y_position = SCREEN_HEIGHT - button_height - 80  # Y-position
 
 buttons = [
-    Button("F1\nEntry Screen", button_margin + 0 * (button_width + button_margin), y_position, button_width, button_height, edit_game),
-    Button("F3\nStart Game", button_margin + 1 * (button_width + button_margin), y_position, button_width, button_height, start_game),
-    Button("F5\nAction Screen", button_margin + 2 * (button_width + button_margin), y_position, button_width, button_height, pre_entered_games),
-    Button("F6\nDelete\nPlayer", button_margin + 3 * (button_width + button_margin), y_position, button_width, button_height, delete_player),
+    Button("F1\nEdit Game", button_margin + 0 * (button_width + button_margin), y_position, button_width, button_height, edit_game),
+    Button("F2\nGame\nParameters", button_margin + 1 * (button_width + button_margin), y_position, button_width, button_height, game_parameters),
+    Button("F3\nStart Game", button_margin + 2 * (button_width + button_margin), y_position, button_width, button_height, start_game),
+    Button("F5\nAction Screen", button_margin + 3 * (button_width + button_margin), y_position, button_width, button_height, pre_entered_games),
     Button("F7\nAdd\nPlayer", button_margin + 4 * (button_width + button_margin), y_position, button_width, button_height, add_player),
     Button("F8\nView Game", button_margin + 5 * (button_width + button_margin), y_position, button_width, button_height, view_game),
     Button("F10\nFlick Sync", button_margin + 6 * (button_width + button_margin), y_position, button_width, button_height, flick_sync),
-    Button("F11\nView\nDatabase", button_margin + 7 * (button_width + button_margin), y_position, button_width, button_height, test_func),
-    Button("F12\nClear Game", button_margin + 8 * (button_width + button_margin), y_position, button_width, button_height, clear_game),
+    Button("F12\nClear Game", button_margin + 7 * (button_width + button_margin), y_position, button_width, button_height, clear_game),
+    
 ]
 
 # dictionary to map keys to actions
@@ -515,18 +560,23 @@ key_to_action = {
     pygame.K_F2: game_parameters,
     pygame.K_F3: start_game,
     pygame.K_F5: pre_entered_games,
-    pygame.K_F6: delete_player,
     pygame.K_F7: add_player,  # no action assigned for F7 yet
     pygame.K_F8: view_game,
     pygame.K_F10: flick_sync,
-    pygame.K_F11: test_func,
     pygame.K_F12: clear_game,
-    pygame.K_ESCAPE: end_game
+    #pygame.K_BACKSPACE: delete_player,
+    pygame.K_ESCAPE: end_game,
+    pygame.K_F6: test_func
 }
 
 # main loop
 running = True
 on_splash_screen = True
+entry_screen_active = True
+
+# Timer event for updates (e.g., every second)
+GAME_UPDATE_EVENT = pygame.USEREVENT + 2
+pygame.time.set_timer(GAME_UPDATE_EVENT, 1000)  # Trigger every 1000 ms (1 second)
 
 
 # Start the update listener thread
@@ -539,12 +589,15 @@ while running:
             running = False
         elif event.type == show_main_screen_event and on_splash_screen:
             on_splash_screen = False
-            
+
         # check for mouse clicks
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouse_pos = event.pos
             for button in buttons:
                 button.is_clicked(mouse_pos)
+            for button in action_screen_buttons:
+                if button.is_clicked(mouse_pos): 
+                    print("End Game Button clicked!")
             for table in tables:
                 for row in table:
                     for text_box in row:
@@ -552,6 +605,7 @@ while running:
                         if clicked is not None:
                             active_table_id, row, col = clicked
                             handle_box_click(row, col)
+                            # text_box.active = True
                 
         # check for keypress events
         elif event.type == pygame.KEYDOWN:
@@ -590,11 +644,11 @@ while running:
         WHITE = (255,255,255)
         pygame.display.set_caption("Entry Terminal")
         font = pygame.font.Font(None, 36)
-        text = font.render("Entry Screen",True, BLACK)
+        text = font.render("Edit Current Game",True, BLACK)
         screen.blit(text, (280, 0))
-        pygame.draw.rect(screen, BLACK, pygame.Rect(50, 550, 900, 40))
-        text = font.render("Click [F6] to Delete Player, [F7] to insert player from selected text box", True, WHITE)
-        screen.blit(text, (100,560))
+        pygame.draw.rect(screen, BLACK, pygame.Rect(0, 550, 800, 40))
+        text = font.render("<Del> to Delete Player, <i> to Insert Player or Edit Codename", True, WHITE)
+        screen.blit(text, (50,560))
         ##################################################
         
         # Draw the tables
@@ -621,6 +675,8 @@ while running:
         for button in buttons:
             button.draw()
         pygame.display.update()
+
+
 
     # game action screen
     elif play_action:
