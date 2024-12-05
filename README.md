@@ -34,11 +34,11 @@ Team 11's work for Software Engineering project.
 # Running the Generator
 - To run the generator you will have to run it before running main.py
 - Open two terminals and in one type python3 python_trafficgenarator_v2.py
-- type in the equipment codes for those 4 players.
+- type in the equipment codes for those 4 players. Please note red team must contain odd number equipment codes and the green team even number equipment codes.
 - Then run main.py by typing python3 main.py
 - Be sure to type in the same equipment codes you used in the generator for each player.
 
-# Once game has started: 
+# Game Start: 
 - F3: Starts Game and Countdown timer. It also allows user to move onto game action screen.
 - Buttons are on screen, and the keys to do certain actions are also described on the screen.
 - Please click back to the game screen to keep interacting with the game.
