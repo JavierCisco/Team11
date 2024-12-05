@@ -523,6 +523,17 @@ def game_timer(type: str):
     else:
         timer_text = "00:00"  # Show "00:00" when time is up
 
+        if remaining_time <= 0:
+            if type == 'game':
+                # Trigger an action when time runs out
+                # print("6-minute timer has expired!")
+                play_action = True
+                # You may want to end the game or trigger another action here
+            elif type == 'start':
+                print("Start phase timer expired. Sending game start signal.")
+                send_message("202")
+                init_timer(6)
+
 	#screen stuff depending on what timer is called
     if type == 'start':
         screen.fill((255, 255, 255))  # White background
@@ -538,18 +549,18 @@ def game_timer(type: str):
 
     pygame.display.flip()
 
-    if remaining_time <= 0:
-        if type == 'game':
-            # Trigger an action when time runs out
-            print("6-minute timer has expired!")
-            # You may want to end the game or trigger another action here
-        else:
-            global start_count, play_action
-            # This is where the white space error was.
-            start_count = False
-            play_action = True
-            send_message("202")
-            init_timer(6)
+    # if remaining_time <= 0:
+    #     if type == 'game':
+    #         # Trigger an action when time runs out
+    #         print("6-minute timer has expired!")
+    #         # You may want to end the game or trigger another action here
+    #     else:
+    #         global start_count, play_action
+    #         # This is where the white space error was.
+    #         start_count = False
+    #         play_action = True
+    #         send_message("202")
+    #         init_timer(6)
 
 def test_func():
 # usable with 't' for now just used to view table players
