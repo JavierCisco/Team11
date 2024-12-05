@@ -47,7 +47,7 @@ pygame.display.set_caption("Splash Screen")
 
 # load and display the splash image
 try:
-    music.load_track("Track03.mp3")
+    # music.load_track("Track03.mp3")
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except Exception as error:
@@ -55,7 +55,7 @@ except Exception as error:
     pygame.quit()
     sys.exit()
 
-music.play_track(start=120)
+# music.play_track(start=120)
 # set a timer to show the main screen after 3 seconds
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
