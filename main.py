@@ -384,6 +384,8 @@ def add_player():
         # Insert the player into the database (for Table 2 as well)
         insert_player(player_id, code_name)
 
+        player_names[equipment_code] = code_name
+
         print(f"Player added:\nTeam: {team}\nName: {code_name}\nID: {player_id}\nEquipment Code: {equipment_code}")
 
         # Broadcast the equipment code via UDP
@@ -391,7 +393,7 @@ def add_player():
     else:
         print("No codename entered; player was not added.")
     add_player_to_team(team, code_name, score=0)
-    player_names.update({code_name, equipment_code})
+    
 
 def add_player_to_team(team, player_name, score=0):
     if team == "Red":
