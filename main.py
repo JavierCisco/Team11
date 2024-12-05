@@ -391,7 +391,7 @@ def add_player():
     else:
         print("No codename entered; player was not added.")
     add_player_to_team(team, code_name, score=0)
-    add_player_names(code_name, equipment_code)
+    player_names.update({code_name, equipment_code})
 
 def add_player_to_team(team, player_name, score=0):
     if team == "Red":
@@ -399,8 +399,8 @@ def add_player_to_team(team, player_name, score=0):
     elif team == "Green":
         green_team.append((player_name, score))
 
-def add_player_names(player_name, equipment_code):
-    player_names.update({player_names: equipment_code})
+# def add_player_names(player_name, equipment_code):
+#     player_names.update({player_names: equipment_code})
     
 
 def delete_player():
