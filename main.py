@@ -10,12 +10,11 @@ from music import Music
 from server import Server
 from textScroll import TextScroll
 
-player_names = {}
 
 # initializing pygame
 pygame.init()
 pygame.mixer.init()
-server = Server(player_names)
+server = Server()
 music = Music()
 
 
@@ -47,7 +46,7 @@ pygame.display.set_caption("Splash Screen")
 
 # load and display the splash image
 try:
-    # music.load_track("Track03.mp3")
+    music.load_track("Track03.mp3")
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except Exception as error:
@@ -55,7 +54,7 @@ except Exception as error:
     pygame.quit()
     sys.exit()
 
-# music.play_track(start=120)
+music.play_track(start=120)
 # set a timer to show the main screen after 3 seconds
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
@@ -204,7 +203,6 @@ selected_row = None
 selected_col = None
 red_team = []
 green_team = []
-
 
 # Table 1 (left side - columns 1 and 2)
 for row in range(10):
@@ -384,8 +382,6 @@ def add_player():
         # Insert the player into the database (for Table 2 as well)
         insert_player(player_id, code_name)
 
-        player_names[equipment_code] = {"name": code_name, "player id": player_id}
-
         print(f"Player added:\nTeam: {team}\nName: {code_name}\nID: {player_id}\nEquipment Code: {equipment_code}")
 
         # Broadcast the equipment code via UDP
@@ -393,16 +389,12 @@ def add_player():
     else:
         print("No codename entered; player was not added.")
     add_player_to_team(team, code_name, score=0)
-    
 
 def add_player_to_team(team, player_name, score=0):
     if team == "Red":
         red_team.append((player_name, score))
     elif team == "Green":
         green_team.append((player_name, score))
-
-# def add_player_names(player_name, equipment_code):
-#     player_names.update({player_names: equipment_code})
     
 
 def delete_player():
@@ -665,13 +657,18 @@ while running:
                 for text_box in row:
                     text_box.draw(screen)
                     
-        #draw columu labels (left)
+        #draw columu labels
         label_font = pygame.font.Font(None, 24)
-        name_label = label_font.render("ID", True, BLACK)
+        name_label = label_font.render("Player ID", True, BLACK)
         id_label = label_font.render("Equipment ID", True, BLACK)
+        red_label = label_font.render('RED TEAM', True, BLACK)
+        green_label = label_font.render("GREEN TEAM", True, BLACK)
+        
+        screen.blit(red_label, (0, 30))
         screen.blit(name_label, (100, 30))
         screen.blit(id_label, (200, 30)) 
         # draw column labels (right)
+        screen.blit(green_label, (700, 30))
         screen.blit(name_label, (450, 30)) 
         screen.blit(id_label, (550, 30))
                     
@@ -680,12 +677,10 @@ while running:
         pygame.display.update()
 
 
+
     # game action screen
     elif play_action:
-        print(f"player_points: {player_points}")
-        print(f"player_names: {player_names}")
-        print(f"action_log: {action_log}")
-        draw_action_screen()
-        game_timer('game')
+            draw_action_screen()
+            game_timer('game')
 
 end_game
