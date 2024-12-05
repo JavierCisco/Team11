@@ -113,7 +113,7 @@ class Server:
    
         
 
-    def send_to_actionlog(self, equip_id: str, hit_id: str):
+    # def send_to_actionlog(self, equip_id: str, hit_id: str):
         # Log to TextScroll if available
         # if self.action_log:
 
@@ -137,7 +137,7 @@ class Server:
         #         message = f'Player {equip_id} hit Player {hit_id}'
         #         self.action_log.add_line(message,color=(0, 255, 0))
                 
-        print(f'[DEBUG] Action Log Message: {equip_id} hit {hit_id}')
+        # print(f'[DEBUG] Action Log Message: {equip_id} hit {hit_id}')
 
     def send_hit_id(self, equip_id_str: str, hit_id_str: str):
         equip_id = int(equip_id_str)
