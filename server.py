@@ -83,33 +83,33 @@ class Server:
         else:
             print(f'[ERROR] Unrecognized message format: {msg}')
 
-        if transmit_id and hit_id:
-            play1_hit = transmit_id
-            play2_hit = hit_id
-            if self.action_log:
-                if hit_id == 43:  # Green Base hit
-                    if transmit_id % 2 == 0:
-                        print(f'[GREEN BASE HIT] Friendly fire by {transmit_id}')
-                    else:
-                        points = 100
-                        message = f'Player {transmit_id} hit Green Base!'
-                        # if self.action_log:
-                        self.action_log.add_line(message,color=(0, 255, 0))
-                elif hit_id == 53:  # Red Base hit
-                    if transmit_id % 2 != 0:
-                        print(f'[RED BASE HIT] Friendly fire by {transmit_id}')
-                    else:
-                        points = 100
-                        message = f'Player {transmit_id} hit Red Base!'
-                        # if self.action_log:
-                        self.action_log.add_line(message,color=(0, 255, 0))
-            else:
-                self.action_log.add_line(f'Player {transmit_id} hit Player {hit_id}')
-            print('[DEBUG] transmit_id or hit_id was set.')
-            print(f'{play1_hit} & {play2_hit}')
+        # if transmit_id and hit_id:
+        #     play1_hit = transmit_id
+        #     play2_hit = hit_id
+        #     if self.action_log:
+        #         if hit_id == 43:  # Green Base hit
+        #             if transmit_id % 2 == 0:
+        #                 print(f'[GREEN BASE HIT] Friendly fire by {transmit_id}')
+        #             else:
+        #                 points = 100
+        #                 message = f'Player {transmit_id} hit Green Base!'
+        #                 # if self.action_log:
+        #                 self.action_log.add_line(message,color=(0, 255, 0))
+        #         elif hit_id == 53:  # Red Base hit
+        #             if transmit_id % 2 != 0:
+        #                 print(f'[RED BASE HIT] Friendly fire by {transmit_id}')
+        #             else:
+        #                 points = 100
+        #                 message = f'Player {transmit_id} hit Red Base!'
+        #                 # if self.action_log:
+        #                 self.action_log.add_line(message,color=(0, 255, 0))
+        #     else:
+        #         self.action_log.add_line(f'Player {transmit_id} hit Player {hit_id}')
+            # print('[DEBUG] transmit_id or hit_id was set.')
+            # print(f'{play1_hit} & {play2_hit}')
 
-        else:
-            print('[DEBUG] transmit_id or hit_id was not set.')
+        # else:
+        #     print('[DEBUG] transmit_id or hit_id was not set.')
    
         
 
@@ -146,28 +146,33 @@ class Server:
         message = ''
         print(f"equip_id: {equip_id}, hit_id: {hit_id}")
 
-        if hit_id == 43:  # Green Base hit
-            if equip_id % 2 == 0:
-                print(f'[GREEN BASE HIT] Friendly fire by {equip_id}')
-            else:
-                points = 100
-                message = f'Player {equip_id} hit Green Base!'
-                #if self.action_log:
-                    #self.action_log.add_line(message)
-        elif hit_id == 53:  # Red Base hit
-            if equip_id % 2 != 0:
-                print(f'[RED BASE HIT] Friendly fire by {equip_id}')
-            else:
-                points = 100
-                message = f'Player {equip_id} hit Red Base!'
-                #if self.action_log:
-                    #self.action_log.add_line(message)
-        elif (equip_id + hit_id) % 2 == 0:  # Friendly fire between players
-            points = -10
-            message = f'Player {equip_id} hit friendly {hit_id}'
-        else:  # Valid hit
-            points = 10
-            message = f'Player {equip_id} hit Player {hit_id}'
+        if self.action_log:
+            if hit_id == 43:  # Green Base hit
+                if equip_id % 2 == 0:
+                    print(f'[GREEN BASE HIT] Friendly fire by {equip_id}')
+                    message = f'Friendly fire by Player {equip_id} hit Green Base!'
+                    self.action_log.add_line(message)
+                else:
+                    points = 100
+                    message = f'Player {equip_id} hit Green Base!'
+                    #if self.action_log:
+                    self.action_log.add_line(message)
+            elif hit_id == 53:  # Red Base hit
+                if equip_id % 2 != 0:
+                    print(f'[RED BASE HIT] Friendly fire by {equip_id}')
+                    message = f'Friendly fire by Player {equip_id} hit Red Base!'
+                    self.action_log.add_line(message)
+                else:
+                    points = 100
+                    message = f'Player {equip_id} hit Red Base!'
+                    #if self.action_log:
+                    self.action_log.add_line(message)
+            elif equip_id % 2 == 0 and hit_id % 2 == 0:  # Friendly fire between players
+                points = -10
+                message = f'Player {equip_id} hit friendly {hit_id}'
+            else:  # Valid hit
+                points = 10
+                message = f'Player {equip_id} hit Player {hit_id}'
 
         self.update_points(equip_id, hit_id, points)
 
