@@ -32,6 +32,9 @@ class Server:
             self.last_update = 0
             self.up_arr = []
             self.action_log = None
+            
+            self.player_points = {}
+            self.team_points = {"TeamGreen": 0, "TeamRed": 0}
 
             print('[DEBUG] Server initialized successfully.')
         except Exception as e:
@@ -182,10 +185,25 @@ class Server:
             self.server_broadcast.sendto(message.encode(FORMAT), BROADCAST_ADDR)
 
     def update_points(self, equip_id: int, hit_id: int, points: int):
-        # Placeholder for updating points in the game
-        print(f'[POINTS UPDATE] Equip ID: {equip_id}, Hit ID: {hit_id}, Points: {points}')
+        
+        if equip_id not in self.player_points:
+            self.player_points[equip_id] = 0
+        self.player_points[equip_id] += points
 
-    def points_to_game(self, prev_seg):
-        # when uncommented it keeps printing??
-        #print('[GAME CALLING FOR POINTS] sending points to game...')
-        return self.up_arr[prev_seg:]
+        # Update team points
+        if equip_id % 2 == 0:
+            team = "TeamGreen"
+        else:
+            team = "TeamRed"
+
+        self.team_points[team] += points
+        print(f'[PLAYER POINTS] {self.player_points}')
+        print(f'[TEAM POINTS] {self.team_points}')
+        # print(f'[POINTS UPDATE] Equip ID: {equip_id}, Hit ID: {hit_id}, Points: {points}')
+
+    def get_scores(self):
+        # Returns both player and team scores
+        return {
+            "player_points": self.player_points,
+            "team_scores": self.team_scores,
+        }
