@@ -16,7 +16,7 @@ class Server:
     global play1_hit
     global play2_hit
 
-    def __init__(self):
+    def __init__(self, player_names):
         print('[DEBUG] Initializing server...')
         try:
             # Initialize sockets for receiving and broadcasting
@@ -32,6 +32,11 @@ class Server:
             self.last_update = 0
             self.up_arr = []
             self.action_log = None
+
+            self.player_names = player_names
+
+            self.player_points = {}
+            self.team_points = {"TeamGreen": 0, "TeamRed": 0}
 
             print('[DEBUG] Server initialized successfully.')
         except Exception as e:
@@ -83,62 +88,6 @@ class Server:
         else:
             print(f'[ERROR] Unrecognized message format: {msg}')
 
-        # if transmit_id and hit_id:
-        #     play1_hit = transmit_id
-        #     play2_hit = hit_id
-        #     if self.action_log:
-        #         if hit_id == 43:  # Green Base hit
-        #             if transmit_id % 2 == 0:
-        #                 print(f'[GREEN BASE HIT] Friendly fire by {transmit_id}')
-        #             else:
-        #                 points = 100
-        #                 message = f'Player {transmit_id} hit Green Base!'
-        #                 # if self.action_log:
-        #                 self.action_log.add_line(message,color=(0, 255, 0))
-        #         elif hit_id == 53:  # Red Base hit
-        #             if transmit_id % 2 != 0:
-        #                 print(f'[RED BASE HIT] Friendly fire by {transmit_id}')
-        #             else:
-        #                 points = 100
-        #                 message = f'Player {transmit_id} hit Red Base!'
-        #                 # if self.action_log:
-        #                 self.action_log.add_line(message,color=(0, 255, 0))
-        #     else:
-        #         self.action_log.add_line(f'Player {transmit_id} hit Player {hit_id}')
-            # print('[DEBUG] transmit_id or hit_id was set.')
-            # print(f'{play1_hit} & {play2_hit}')
-
-        # else:
-        #     print('[DEBUG] transmit_id or hit_id was not set.')
-   
-        
-
-    # def send_to_actionlog(self, equip_id: str, hit_id: str):
-        # Log to TextScroll if available
-        # if self.action_log:
-
-        #     if hit_id == 43:  # Green Base hit
-        #         if equip_id % 2 == 0:
-        #             print(f'[GREEN BASE HIT] Friendly fire by {equip_id}')
-        #         else:
-        #             points = 100
-        #             message = f'Player {equip_id} hit Green Base!'
-        #             if self.action_log:
-        #                 self.action_log.add_line(message,color=(0, 255, 0))
-        #     elif hit_id == 53:  # Red Base hit
-        #         if equip_id % 2 != 0:
-        #             print(f'[RED BASE HIT] Friendly fire by {equip_id}')
-        #         else:
-        #             points = 100
-        #             message = f'Player {equip_id} hit Red Base!'
-        #             if self.action_log:
-        #                 self.action_log.add_line(message,color=(0, 255, 0))
-        #     else:
-        #         message = f'Player {equip_id} hit Player {hit_id}'
-        #         self.action_log.add_line(message,color=(0, 255, 0))
-                
-        # print(f'[DEBUG] Action Log Message: {equip_id} hit {hit_id}')
-
     def send_hit_id(self, equip_id_str: str, hit_id_str: str):
         equip_id = int(equip_id_str)
         hit_id = int(hit_id_str)
@@ -182,10 +131,30 @@ class Server:
             self.server_broadcast.sendto(message.encode(FORMAT), BROADCAST_ADDR)
 
     def update_points(self, equip_id: int, hit_id: int, points: int):
-        # Placeholder for updating points in the game
-        print(f'[POINTS UPDATE] Equip ID: {equip_id}, Hit ID: {hit_id}, Points: {points}')
+        
+        if equip_id not in self.player_points:
+            self.player_points[equip_id] = 0
+        self.player_points[equip_id] += points
+
+        # Update team points
+        if equip_id % 2 == 0:
+            team = "TeamGreen"
+        else:
+            team = "TeamRed"
+
+        self.team_points[team] += points
+        print(f'[PLAYER POINTS] {self.player_points}')
+        print(f'[TEAM POINTS] {self.team_points}')
+        # print(f'[POINTS UPDATE] Equip ID: {equip_id}, Hit ID: {hit_id}, Points: {points}')
+
+    def get_scores(self):
+        # Returns both player and team scores
+        return {
+            "player_points": self.player_points,
+            "team_scores": self.team_scores,
+        }
 
     def points_to_game(self, prev_seg):
-        # when uncommented it keeps printing??
-        #print('[GAME CALLING FOR POINTS] sending points to game...')
+    #     # when uncommented it keeps printing??
+    #     #print('[GAME CALLING FOR POINTS] sending points to game...')
         return self.up_arr[prev_seg:]
