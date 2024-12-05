@@ -10,11 +10,12 @@ from music import Music
 from server import Server
 from textScroll import TextScroll
 
+player_names = {}
 
 # initializing pygame
 pygame.init()
 pygame.mixer.init()
-server = Server()
+server = Server(player_names)
 music = Music()
 
 
@@ -46,7 +47,7 @@ pygame.display.set_caption("Splash Screen")
 
 # load and display the splash image
 try:
-    music.load_track("Track03.mp3")
+    # music.load_track("Track03.mp3")
     logo = pygame.image.load("logo.png")
     logo = pygame.transform.scale(logo, (800, 500))
 except Exception as error:
@@ -54,7 +55,7 @@ except Exception as error:
     pygame.quit()
     sys.exit()
 
-music.play_track(start=120)
+# music.play_track(start=120)
 # set a timer to show the main screen after 3 seconds
 show_main_screen_event = pygame.USEREVENT + 1
 pygame.time.set_timer(show_main_screen_event, 3000)
@@ -203,6 +204,7 @@ selected_row = None
 selected_col = None
 red_team = []
 green_team = []
+
 
 # Table 1 (left side - columns 1 and 2)
 for row in range(10):
@@ -382,6 +384,8 @@ def add_player():
         # Insert the player into the database (for Table 2 as well)
         insert_player(player_id, code_name)
 
+        player_names[equipment_code] = {"name": code_name, "player id": player_id}
+
         print(f"Player added:\nTeam: {team}\nName: {code_name}\nID: {player_id}\nEquipment Code: {equipment_code}")
 
         # Broadcast the equipment code via UDP
@@ -389,12 +393,16 @@ def add_player():
     else:
         print("No codename entered; player was not added.")
     add_player_to_team(team, code_name, score=0)
+    
 
 def add_player_to_team(team, player_name, score=0):
     if team == "Red":
         red_team.append((player_name, score))
     elif team == "Green":
         green_team.append((player_name, score))
+
+# def add_player_names(player_name, equipment_code):
+#     player_names.update({player_names: equipment_code})
     
 
 def delete_player():
@@ -449,16 +457,26 @@ def draw_action_screen():
     # Draw Red Team scores
     red_team_header = font_text.render("Red Team", True, RED)
     screen.blit(red_team_header, (50, 20))
-    for i, (player, score) in enumerate(red_team):
-        player_text = font_text.render(f"{player}: {score}", True, WHITE)
-        screen.blit(player_text, (50, 60 + i * 30))
+    y_offset = 60
+
+    for equipment_code, score in player_points.items():
+        if int(equipment_code) % 2 != 0:  # Red team based on odd equipment_code
+            player_info = player_names.get(equipment_code, {"name": f"Player {equipment_code}"})
+            player_name = player_info["name"]
+            player_text = font_text.render(f"{player_name}: {score}", True, WHITE)
+            screen.blit(player_text, (50, y_offset))
+            y_offset += 30
 
     # Draw Green Team scores
     green_team_header = font_text.render("Green Team", True, GREEN)
     screen.blit(green_team_header, (500, 20))
-    for i, (player, score) in enumerate(green_team):
-        player_text = font_text.render(f"{player}: {score}", True, WHITE)
-        screen.blit(player_text, (500, 60 + i * 30))
+    for equipment_code, score in player_points.items():
+        if int(equipment_code) % 2 == 0:  # Green team based on even equipment_code
+            player_info = player_names.get(equipment_code, {"name": f"Player {equipment_code}"})
+            player_name = player_info["name"]
+            player_text = font_text.render(f"{player_name}: {score}", True, WHITE)
+            screen.blit(player_text, (500, y_offset))
+            y_offset += 30
 
     # Draw the action log header
     action_header = font_title.render("Current Game Action", True, BLUE)
@@ -672,10 +690,9 @@ while running:
         pygame.display.update()
 
 
-
     # game action screen
     elif play_action:
-            draw_action_screen()
-            game_timer('game')
+        draw_action_screen()
+        game_timer('game')
 
 end_game
