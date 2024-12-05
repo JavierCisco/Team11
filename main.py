@@ -703,6 +703,9 @@ while running:
 
     # game action screen
     elif play_action:
+        print(f"player_points: {player_points}")
+        print(f"player_names: {player_names}")
+        print(f"action_log: {action_log}")
         draw_action_screen()
         game_timer('game')
 
