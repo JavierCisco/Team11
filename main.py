@@ -10,11 +10,12 @@ from music import Music
 from server import Server
 from textScroll import TextScroll
 
+player_names = {}
 
 # initializing pygame
 pygame.init()
 pygame.mixer.init()
-server = Server()
+server = Server(player_names)
 music = Music()
 
 
@@ -204,6 +205,7 @@ selected_col = None
 red_team = []
 green_team = []
 
+
 # Table 1 (left side - columns 1 and 2)
 for row in range(10):
     table_row = []
@@ -389,12 +391,16 @@ def add_player():
     else:
         print("No codename entered; player was not added.")
     add_player_to_team(team, code_name, score=0)
+    add_player_names(code_name, equipment_code)
 
 def add_player_to_team(team, player_name, score=0):
     if team == "Red":
         red_team.append((player_name, score))
     elif team == "Green":
         green_team.append((player_name, score))
+
+def add_player_names(player_name, equipment_code):
+    player_names.update({player_names: equipment_code})
     
 
 def delete_player():
@@ -446,19 +452,37 @@ def draw_action_screen():
     current_scores_header = font_title.render("Current Scores", True, BLUE)
     screen.blit(current_scores_header, (750, 20))
 
+    scores = server.get_scores()
+    player_points = scores["player_points"]
+    team_scores = scores["team_scores"]
+
     # Draw Red Team scores
-    red_team_header = font_text.render("Red Team", True, RED)
+    red_team_header = font_text.render(f"Red Team: {team_scores['Red']} points", True, RED)
     screen.blit(red_team_header, (50, 20))
-    for i, (player, score) in enumerate(red_team):
-        player_text = font_text.render(f"{player}: {score}", True, WHITE)
-        screen.blit(player_text, (50, 60 + i * 30))
+    y_offset = 60
+    for player_id, score in player_points.items():
+        if player_id % 2 != 0:  # Red team
+            player_name = player_names.get(player_id, f"Player {player_id}")
+            player_text = font_text.render(f"{player_name}: {score}", True, WHITE)
+            screen.blit(player_text, (50, y_offset))
+            y_offset += 30
+    # for i, (player, score) in enumerate(red_team):
+    #     player_text = font_text.render(f"{player}: {score}", True, WHITE)
+    #     screen.blit(player_text, (50, 60 + i * 30))
 
     # Draw Green Team scores
-    green_team_header = font_text.render("Green Team", True, GREEN)
+    green_team_header = font_text.render(f"Green Team: {team_scores['Green']} points", True, GREEN)
     screen.blit(green_team_header, (500, 20))
-    for i, (player, score) in enumerate(green_team):
-        player_text = font_text.render(f"{player}: {score}", True, WHITE)
-        screen.blit(player_text, (500, 60 + i * 30))
+    y_offset = 60
+    for player_id, score in player_points.items():
+        if player_id % 2 == 0:  # Green team
+            player_name = player_names.get(player_id, f"Player {player_id}")
+            player_text = font_text.render(f"{player_name}: {score}", True, WHITE)
+            screen.blit(player_text, (500, y_offset))
+            y_offset += 30
+    # for i, (player, score) in enumerate(green_team):
+    #     player_text = font_text.render(f"{player}: {score}", True, WHITE)
+    #     screen.blit(player_text, (500, 60 + i * 30))
 
     # Draw the action log header
     action_header = font_title.render("Current Game Action", True, BLUE)
@@ -679,6 +703,3 @@ while running:
             game_timer('game')
 
 end_game
-
-
-
